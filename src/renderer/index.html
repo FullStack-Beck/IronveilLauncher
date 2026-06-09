@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project Ironveil</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ══ TOKENS ════════════════════════════════════════════════ */
+:root {
+  --parch:    #f5ead4;
+  --parch2:   #ede0bc;
+  --parch3:   #e5d0a0;
+  --parch4:   #d8c088;
+  --ink:      #1a1208;
+  --ink2:     #3b2c0e;
+  --ink3:     #6b4e22;
+  --ink4:     #8c6d3f;
+  --ink5:     #b8924a;
+  --blood:    #7a1c1c;
+  --teal:     #2d6b5a;
+  --teal2:    #3a8a72;
+  --teal3:    #4aaa8e;
+  --gold:     #8b6910;
+  --gold2:    #b8900f;
+  --gold3:    #d4a820;
+  --gold4:    #f0c83a;
+  --border:   rgba(139,105,20,.2);
+  --border2:  rgba(139,105,20,.4);
+  --border3:  rgba(139,105,20,.65);
+  --shadow:   rgba(26,18,8,.25);
+  --shadow2:  rgba(26,18,8,.5);
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+}
+
+/* ══ RESET ══════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; user-select:none; }
+
+body {
+  background: var(--parch);
+  background-image: var(--noise);
+  color: var(--ink);
+  font-family: 'Crimson Pro', serif;
+  font-size: 16px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Vignette */
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 120% 120% at 50% 40%,
+    transparent 45%, rgba(80,50,5,.12) 100%);
+}
+
+/* ══ TITLEBAR (custom drag region) ═════════════════════════ */
+.titlebar {
+  height: 40px;
+  background: linear-gradient(to bottom, var(--ink2), var(--ink));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  -webkit-app-region: drag;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 200;
+  border-bottom: 1px solid rgba(139,105,20,.3);
+}
+
+.titlebar-logo {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .22em;
+  color: rgba(200,160,40,.7);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.titlebar-logo .mark { font-size: 14px; color: var(--gold3); }
+
+.titlebar-controls {
+  display: flex;
+  gap: 1px;
+  -webkit-app-region: no-drag;
+}
+
+.wc-btn {
+  width: 36px; height: 28px;
+  border: none;
+  border-left: 1px solid rgba(139,105,20,.15);
+  background: transparent;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(139,105,20,.45);
+  transition: background .15s, color .15s;
+  font-size: 13px;
+  line-height: 1;
+}
+.wc-btn:hover        { background: rgba(139,105,20,.12); color: rgba(200,155,30,.85); }
+.wc-close:hover      { background: rgba(140,30,20,.35);  color: rgba(255,180,160,.9); }
+
+/* ══ LAYOUT ═════════════════════════════════════════════════ */
+.app-layout {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* ══ SIDEBAR ════════════════════════════════════════════════ */
+.sidebar {
+  width: 220px;
+  background: linear-gradient(180deg, var(--ink2) 0%, var(--ink) 100%);
+  background-image: var(--noise);
+  border-right: 1px solid rgba(139,105,20,.25);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.sidebar-hero {
+  padding: 28px 20px 20px;
+  text-align: center;
+  border-bottom: 1px solid rgba(139,105,20,.2);
+  position: relative;
+}
+
+.sidebar-hero::after {
+  content: '';
+  position: absolute; bottom: 0; left: 14px; right: 14px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,150,10,.35), transparent);
+}
+
+.sb-emblem {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 12px rgba(200,150,10,.4));
+  animation: emblemGlow 4s ease-in-out infinite;
+}
+
+@keyframes emblemGlow {
+  0%,100% { filter: drop-shadow(0 0 8px rgba(200,150,10,.3)); }
+  50%      { filter: drop-shadow(0 0 18px rgba(200,150,10,.6)); }
+}
+
+.sb-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 13px;
+  color: var(--gold3);
+  letter-spacing: .06em;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.sb-sub {
+  font-family: 'Cinzel', serif;
+  font-size: 8.5px;
+  letter-spacing: .22em;
+  color: rgba(139,105,20,.5);
+}
+
+/* Nav */
+.sidebar-nav {
+  flex: 1;
+  padding: 10px 0;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 18px;
+  color: rgba(176,144,112,.65);
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .1em;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: all .2s;
+  position: relative;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--gold3);
+  opacity: 0; transition: opacity .2s;
+}
+
+.nav-item:hover { color: rgba(220,170,40,.85); background: rgba(139,105,20,.07); }
+.nav-item.active { color: var(--gold3); background: rgba(139,105,20,.13); }
+.nav-item.active::before { opacity: 1; }
+.nav-icon { font-size: 14px; width: 16px; text-align: center; flex-shrink: 0; }
+
+/* User chip */
+.sidebar-user {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(139,105,20,.2);
+  background: rgba(0,0,0,.15);
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.user-avatar {
+  width: 32px; height: 32px;
+  background: rgba(139,105,20,.25);
+  border: 1px solid rgba(139,105,20,.4);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  color: var(--gold3);
+  flex-shrink: 0;
+}
+
+.user-name-text {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  color: rgba(220,170,40,.8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.user-role-text {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .12em;
+  color: rgba(139,105,20,.55);
+  margin-top: 1px;
+}
+
+.btn-signout {
+  width: 100%;
+  padding: 7px;
+  background: none;
+  border: 1px solid rgba(139,105,20,.25);
+  color: rgba(139,105,20,.6);
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .1em;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-signout:hover { border-color: rgba(139,105,20,.5); color: rgba(200,150,10,.8); }
+
+/* ══ MAIN AREA ══════════════════════════════════════════════ */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ══ PAGES ══════════════════════════════════════════════════ */
+.page { display: none; flex: 1; overflow-y: auto; }
+.page.active { display: flex; flex-direction: column; }
+
+/* ══ AUTH PAGE ══════════════════════════════════════════════ */
+#page-auth {
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, var(--parch) 0%, var(--parch2) 100%);
+}
+
+.auth-card {
+  width: 380px;
+  background: var(--parch2);
+  border: 2px solid var(--border2);
+  box-shadow: 0 16px 48px var(--shadow2);
+  animation: slideUp .4s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:none; }
+}
+
+.auth-head {
+  background: var(--ink2);
+  padding: 30px 28px 22px;
+  text-align: center;
+  border-bottom: 2px solid rgba(139,105,20,.35);
+}
+
+.auth-emblem { font-size: 32px; display: block; margin-bottom: 8px; }
+
+.auth-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 20px;
+  color: var(--gold3);
+  letter-spacing: .06em;
+  margin-bottom: 2px;
+}
+
+.auth-subtitle {
+  font-family: 'Cinzel', serif;
+  font-size: 9.5px;
+  letter-spacing: .2em;
+  color: rgba(139,105,20,.55);
+}
+
+.auth-body { padding: 24px 26px 20px; }
+
+.auth-tabs {
+  display: flex;
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.auth-tab {
+  flex: 1; padding: 8px;
+  background: none; border: none;
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: .12em;
+  color: var(--ink4); cursor: pointer;
+  transition: all .2s;
+  border-bottom: 2px solid transparent;
+}
+.auth-tab.active { background: var(--parch3); color: var(--gold2); border-bottom-color: var(--gold2); }
+
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 9.5px;
+  letter-spacing: .16em;
+  color: var(--ink4);
+  margin-bottom: 5px;
+}
+.field input {
+  width: 100%;
+  background: var(--parch);
+  border: 1.5px solid var(--border);
+  color: var(--ink);
+  padding: 9px 12px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 16px;
+  outline: none;
+  transition: border-color .2s;
+}
+.field input:focus { border-color: var(--gold2); }
+
+.auth-btn {
+  width: 100%; padding: 12px;
+  background: var(--ink2); color: var(--parch);
+  border: none; font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: .14em;
+  cursor: pointer; transition: background .2s;
+  margin-bottom: 10px;
+}
+.auth-btn:hover { background: var(--ink); }
+.auth-btn:disabled { opacity: .5; cursor: default; }
+
+.auth-msg {
+  font-family: 'Cinzel', serif;
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  text-align: center;
+  min-height: 16px;
+  color: var(--blood);
+}
+
+/* ══ PLAY PAGE ══════════════════════════════════════════════ */
+#page-play {
+  background: linear-gradient(160deg, var(--parch) 0%, var(--parch2) 60%);
+}
+
+.play-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 40px;
+  text-align: center;
+  position: relative;
+}
+
+/* Ornamental background rune */
+.play-hero::before {
+  content: '⚒';
+  position: absolute;
+  font-size: 280px;
+  color: rgba(139,105,20,.04);
+  font-family: 'Cinzel', serif;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.play-ornament {
+  font-size: 18px;
+  color: var(--gold2);
+  letter-spacing: .5em;
+  opacity: .5;
+  margin-bottom: 8px;
+}
+
+.play-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 9.5px;
+  letter-spacing: .36em;
+  color: var(--ink4);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.play-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: .04em;
+  line-height: 1;
+  margin-bottom: 12px;
+  text-shadow: 2px 4px 16px rgba(139,105,20,.18);
+}
+
+.play-tagline {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink3);
+  margin-bottom: 36px;
+}
+
+/* Playtest badge */
+.pt-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 22px;
+  border: 1.5px solid var(--border2);
+  background: var(--parch2);
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .1em;
+  color: var(--ink3);
+  margin-bottom: 32px;
+}
+
+.pt-pip {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ink4);
+  animation: pipPulse 2.5s ease-in-out infinite;
+}
+.pt-pip.open { background: var(--teal3); }
+.pt-pip.soon { background: var(--gold3); }
+@keyframes pipPulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:.4; transform:scale(.75); }
+}
+
+/* The big launch button */
+.launch-area { position: relative; margin-bottom: 28px; }
+
+.btn-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 52px;
+  background: linear-gradient(135deg, var(--ink) 0%, var(--ink2) 100%);
+  border: 2px solid var(--gold2);
+  color: var(--parch);
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: .2em;
+  cursor: pointer;
+  transition: all .25s;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(26,18,8,.35), inset 0 1px 0 rgba(200,150,10,.15);
+}
+
+.btn-launch::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
+  opacity: 0;
+  transition: opacity .25s;
+}
+
+.btn-launch:hover::before { opacity: 1; }
+.btn-launch:hover { box-shadow: 0 6px 32px rgba(139,105,20,.4), 0 0 0 1px var(--gold3); transform: translateY(-1px); }
+.btn-launch:active { transform: translateY(1px); }
+.btn-launch:disabled { opacity: .4; cursor: default; pointer-events: none; }
+
+.btn-launch span { position: relative; z-index: 1; }
+.btn-launch .launch-icon { font-size: 20px; position: relative; z-index: 1; }
+
+/* No access state */
+.access-denied {
+  padding: 24px 32px;
+  border: 1.5px solid var(--border2);
+  background: var(--parch2);
+  max-width: 420px;
+  text-align: center;
+}
+
+.access-denied .lock { font-size: 32px; margin-bottom: 12px; display: block; }
+.access-denied .ad-title {
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  color: var(--ink);
+  letter-spacing: .06em;
+  margin-bottom: 8px;
+}
+.access-denied p { font-style: italic; color: var(--ink3); font-size: 15px; }
+
+/* Game path row */
+.game-path-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--parch2);
+  border: 1px solid var(--border);
+  max-width: 480px;
+  width: 100%;
+}
+
+.game-path-text {
+  flex: 1;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11.5px;
+  color: var(--ink4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-browse {
+  padding: 5px 14px;
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--ink3);
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .1em;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.btn-browse:hover { border-color: var(--gold2); color: var(--gold2); }
+
+/* Status message */
+.launch-status {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--ink4);
+  margin-top: 10px;
+  min-height: 16px;
+}
+.launch-status.ok  { color: var(--teal2); }
+.launch-status.err { color: var(--blood); }
+
+/* ══ NEWS PAGE ══════════════════════════════════════════════ */
+#page-news { padding: 0; }
+
+.news-header {
+  padding: 24px 32px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--parch2);
+}
+
+.news-title {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: .1em;
+  margin-bottom: 2px;
+}
+
+.news-sub {
+  font-style: italic;
+  color: var(--ink4);
+  font-size: 14px;
+}
+
+.news-list {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.news-entry {
+  background: var(--parch2);
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 16px;
+  transition: background .15s;
+}
+.news-entry:hover { background: var(--parch3); }
+
+.news-date {
+  font-family: 'Cinzel', serif;
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  color: var(--ink4);
+  padding-top: 2px;
+  border-right: 1px solid var(--border);
+  padding-right: 12px;
+}
+
+.news-entry-title {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  color: var(--ink);
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+
+.news-body { color: var(--ink3); font-size: 14.5px; line-height: 1.6; }
+
+.news-tag {
+  display: inline-block;
+  margin-top: 7px; padding: 2px 9px;
+  border: 1px solid var(--border); 
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: .14em; color: var(--ink4);
+}
+
+.news-empty {
+  padding: 40px;
+  text-align: center;
+  font-style: italic;
+  color: var(--ink4);
+}
+
+/* Loading skeleton */
+.skel {
+  background: linear-gradient(90deg, var(--parch2) 25%, var(--parch3) 50%, var(--parch2) 75%);
+  background-size: 200% 100%;
+  animation: shim 1.4s infinite;
+  opacity: .6;
+}
+@keyframes shim { from { background-position:200% 0; } to { background-position:-200% 0; } }
+
+/* ══ ROADMAP PAGE ═══════════════════════════════════════════ */
+#page-roadmap { padding: 0; }
+
+.roadmap-header {
+  padding: 24px 32px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--parch2);
+}
+
+.roadmap-title {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: .1em;
+}
+
+.roadmap-body { padding: 20px 24px; }
+
+.overall-bar-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9.5px;
+  letter-spacing: .18em;
+  color: var(--ink4);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.bar-track {
+  height: 5px;
+  background: var(--parch3);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold4));
+  transition: width 1.2s cubic-bezier(.4,0,.2,1);
+}
+
+.groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.group-row {
+  background: var(--parch2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.group-row-head {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.group-row-head:hover { background: var(--parch3); }
+
+.gr-icon { font-size: 18px; flex-shrink: 0; }
+.gr-name {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  color: var(--ink);
+  letter-spacing: .04em;
+  flex: 1;
+}
+.gr-pct {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  color: var(--ink4);
+  letter-spacing: .1em;
+}
+.gr-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 8.5px;
+  letter-spacing: .1em;
+  padding: 2px 7px;
+  border: 1px solid;
+}
+.gr-badge.done   { border-color: var(--teal2); color: var(--teal2); }
+.gr-badge.active { border-color: var(--gold2); color: var(--gold2); }
+
+.gr-mini-track {
+  height: 2px;
+  background: rgba(139,105,20,.12);
+}
+.gr-mini-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold3));
+  transition: width .7s ease;
+}
+
+.gr-tasks {
+  display: none;
+  border-top: 1px solid var(--border);
+}
+.gr-tasks.open { display: block; }
+
+.gr-task-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 8px 44px;
+  font-size: 14px;
+  border-bottom: 1px dotted rgba(139,105,20,.08);
+  color: var(--ink2);
+}
+.gr-task-item:last-child { border-bottom: none; }
+.gr-task-item.done { color: var(--teal); }
+.gr-task-item.wip  { color: var(--gold2); }
+.task-rune { font-size: 10px; width: 12px; flex-shrink: 0; text-align: center; }
+
+/* ══ TOAST ══════════════════════════════════════════════════ */
+.toast-container {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--ink2);
+  border: 1px solid rgba(139,105,20,.4);
+  padding: 10px 18px;
+  font-family: 'Cinzel', serif;
+  font-size: 11.5px;
+  color: var(--gold3);
+  letter-spacing: .07em;
+  box-shadow: 0 4px 16px var(--shadow2);
+  opacity: 0;
+  transform: translateX(12px);
+  transition: opacity .3s, transform .3s;
+}
+.toast.show { opacity: 1; transform: none; }
+.toast.err  { color: #e86060; border-color: rgba(200,50,50,.4); }
+
+/* ══ INSTALL / UPDATE PANEL ═════════════════════════════════ */
+#page-install { padding: 0; }
+
+.install-header {
+  padding: 24px 32px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--parch2);
+}
+
+.install-title {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: .1em;
+  margin-bottom: 2px;
+}
+
+.install-sub {
+  font-style: italic;
+  color: var(--ink4);
+  font-size: 14px;
+}
+
+.install-body {
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 640px;
+}
+
+/* Version card */
+.version-card {
+  background: var(--parch2);
+  border: 1px solid var(--border);
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.ver-block-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .2em;
+  color: var(--ink4);
+  margin-bottom: 4px;
+}
+
+.ver-block-value {
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  color: var(--ink);
+  letter-spacing: .06em;
+}
+
+.ver-block-value.up-to-date { color: var(--teal2); }
+.ver-block-value.outdated   { color: var(--gold2); }
+.ver-block-value.not-installed { color: var(--ink4); font-style: italic; }
+
+/* Action row */
+.install-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 28px;
+  background: linear-gradient(135deg, var(--ink) 0%, var(--ink2) 100%);
+  border: 1.5px solid var(--gold2);
+  color: var(--parch);
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: .14em;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-install::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
+  opacity: 0;
+  transition: opacity .2s;
+}
+.btn-install:hover::before { opacity: 1; }
+.btn-install span { position: relative; z-index: 1; }
+.btn-install:disabled { opacity: .4; cursor: default; pointer-events: none; }
+
+.btn-uninstall {
+  padding: 13px 20px;
+  background: none;
+  border: 1.5px solid rgba(122,28,28,.35);
+  color: var(--blood);
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .1em;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-uninstall:hover { border-color: var(--blood); background: rgba(122,28,28,.07); }
+.btn-uninstall:disabled { opacity: .35; cursor: default; pointer-events: none; }
+
+/* Progress section */
+.install-progress-wrap {
+  display: none;
+}
+.install-progress-wrap.visible { display: block; }
+
+.prog-status-text {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .1em;
+  color: var(--ink3);
+  margin-bottom: 8px;
+}
+
+.prog-track {
+  height: 6px;
+  background: var(--parch3);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold4));
+  width: 0%;
+  transition: width .3s ease;
+}
+
+.prog-bytes {
+  font-family: 'Cinzel', serif;
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  color: var(--ink4);
+}
+
+/* Install directory row */
+.install-dir-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  background: var(--parch2);
+}
+
+.install-dir-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: .18em;
+  color: var(--ink4);
+  padding: 8px 12px;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  background: var(--parch3);
+}
+
+.install-dir-path {
+  flex: 1;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--ink3);
+  padding: 8px 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Release notes */
+.release-notes {
+  border: 1px solid var(--border);
+  background: var(--parch2);
+}
+
+.release-notes-head {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: .16em;
+  color: var(--ink4);
+  background: var(--parch3);
+}
+
+.release-notes-body {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--ink3);
+  line-height: 1.7;
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.install-msg {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .07em;
+  color: var(--ink4);
+  min-height: 16px;
+}
+.install-msg.ok  { color: var(--teal2); }
+.install-msg.err { color: var(--blood); }
+
+/* ══ SCROLLBAR ══════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--parch2); }
+::-webkit-scrollbar-thumb { background: var(--border2); }
+</style>
+</head>
+<body>
+
+<!-- Titlebar -->
+<div class="titlebar">
+  <div class="titlebar-logo">
+    <span class="mark">⚒</span>
+    PROJECT IRONVEIL
+  </div>
+  <div class="titlebar-controls">
+    <button class="wc-btn wc-min" onclick="window.electron.minimize()" title="Minimize">
+      <svg width="10" height="2" viewBox="0 0 10 2" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="10" height="2" fill="currentColor"/>
+      </svg>
+    </button>
+    <button class="wc-btn wc-max" onclick="window.electron.maximize()" title="Maximise">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" stroke-width="1.2" fill="none"/>
+      </svg>
+    </button>
+    <button class="wc-btn wc-close" onclick="window.electron.close()" title="Close">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0.7" y1="0.7" x2="9.3" y2="9.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
+        <line x1="9.3" y1="0.7" x2="0.7" y2="9.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- App body -->
+<div class="app-layout">
+
+  <!-- Sidebar (shown when signed in) -->
+  <div class="sidebar" id="sidebar" style="display:none">
+    <div class="sidebar-hero">
+      <span class="sb-emblem">⚒</span>
+      <div class="sb-title">Project<br>Ironveil</div>
+      <div class="sb-sub">VR Crafting RPG</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" id="nav-play" onclick="showPage('play',this)">
+        <span class="nav-icon">▶</span> Play
+      </button>
+      <button class="nav-item" id="nav-news" onclick="showPage('news',this)">
+        <span class="nav-icon">⊞</span> Dev Scrolls
+      </button>
+      <button class="nav-item" id="nav-roadmap" onclick="showPage('roadmap',this)">
+        <span class="nav-icon">⚔</span> Codex
+      </button>
+      <button class="nav-item" id="nav-install" onclick="showPage('install',this)">
+        <span class="nav-icon">⬇</span> Install
+      </button>
+    </nav>
+
+    <div class="sidebar-user" id="sidebar-user">
+      <div class="user-row">
+        <div class="user-avatar" id="user-initial">?</div>
+        <div>
+          <div class="user-name-text" id="user-name-text">—</div>
+          <div class="user-role-text" id="user-role-text">—</div>
+        </div>
+      </div>
+      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- ── AUTH ── -->
+    <div class="page active" id="page-auth" style="display:flex">
+      <div class="auth-card">
+        <div class="auth-head">
+          <span class="auth-emblem">⚒</span>
+          <div class="auth-title">Ironveil</div>
+          <div class="auth-subtitle">ENTER THE FORGE</div>
+        </div>
+        <div class="auth-body">
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="tab-in" onclick="switchTab('in')">Sign In</button>
+            <button class="auth-tab" id="tab-up" onclick="switchTab('up')">Create Account</button>
+          </div>
+
+          <div id="form-in">
+            <div class="field"><label>Email</label>
+              <input type="email" id="in-email" placeholder="your@email.com">
+            </div>
+            <div class="field"><label>Password</label>
+              <input type="password" id="in-pass" placeholder="••••••••"
+                onkeydown="if(event.key==='Enter')doSignIn()">
+            </div>
+            <button class="auth-btn" id="signin-btn" onclick="doSignIn()">Enter the Forge</button>
+          </div>
+
+          <div id="form-up" style="display:none">
+            <div class="field"><label>Display Name</label>
+              <input type="text" id="up-name" placeholder="Your name or alias">
+            </div>
+            <div class="field"><label>Email</label>
+              <input type="email" id="up-email" placeholder="your@email.com">
+            </div>
+            <div class="field"><label>Password</label>
+              <input type="password" id="up-pass" placeholder="Min. 6 characters"
+                onkeydown="if(event.key==='Enter')doSignUp()">
+            </div>
+            <button class="auth-btn" onclick="doSignUp()">Pledge Your Name</button>
+          </div>
+
+          <div class="auth-msg" id="auth-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PLAY ── -->
+    <div class="page" id="page-play">
+      <div class="play-hero">
+        <div class="play-ornament">✦ ✦ ✦</div>
+        <div class="play-eyebrow">Open Development · VR Crafting RPG</div>
+        <h1 class="play-title">Project Ironveil</h1>
+        <p class="play-tagline">Forge Your Legend in Iron and Fire</p>
+
+        <!-- Playtest status -->
+        <div class="pt-banner">
+          <div class="pt-pip" id="pt-pip"></div>
+          <span id="pt-text">Checking status…</span>
+        </div>
+
+        <!-- Launch (if access) -->
+        <div id="launch-section" style="display:none">
+          <div class="launch-area">
+            <button class="btn-launch" id="launch-btn" onclick="launchGame()">
+              <span class="launch-icon">▶</span>
+              <span>LAUNCH IRONVEIL</span>
+            </button>
+          </div>
+          <div class="game-path-row">
+            <span class="game-path-text" id="game-path-text">No game detected</span>
+            <button class="btn-browse" onclick="browseForGame()">⬡ Locate</button>
+          </div>
+          <div class="launch-status" id="launch-status"></div>
+        </div>
+
+        <!-- No access -->
+        <div id="no-access-section" style="display:none">
+          <div class="access-denied">
+            <span class="lock">🔒</span>
+            <div class="ad-title">Access Not Yet Granted</div>
+            <p>Your account is registered, but the forge gates have not opened for you yet.
+              A developer will grant you access when a playtest spot becomes available.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── NEWS ── -->
+    <div class="page" id="page-news">
+      <div class="news-header">
+        <div class="news-title">Development Scrolls</div>
+        <div class="news-sub">Chronicles from the forge</div>
+      </div>
+      <div class="news-list" id="news-list">
+        <div class="skel" style="height:72px;margin-bottom:4px"></div>
+        <div class="skel" style="height:72px;margin-bottom:4px"></div>
+        <div class="skel" style="height:72px"></div>
+      </div>
+    </div>
+
+    <!-- ── ROADMAP ── -->
+    <div class="page" id="page-roadmap">
+      <div class="roadmap-header">
+        <div class="roadmap-title">Codex of Progress</div>
+      </div>
+      <div class="roadmap-body">
+        <div class="overall-bar-label">
+          <span>OVERALL COMPLETION</span>
+          <span id="rm-pct-label">—</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" id="rm-bar" style="width:0%"></div>
+        </div>
+        <div class="groups-list" id="rm-groups">
+          <div class="skel" style="height:46px;margin-bottom:4px"></div>
+          <div class="skel" style="height:46px;margin-bottom:4px"></div>
+          <div class="skel" style="height:46px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INSTALL / UPDATE ── -->
+    <div class="page" id="page-install">
+      <div class="install-header">
+        <div class="install-title">Forge Installation</div>
+        <div class="install-sub" id="install-sub">Checking for updates…</div>
+      </div>
+      <div class="install-body">
+
+        <!-- Version card -->
+        <div class="version-card">
+          <div>
+            <div class="ver-block-label">INSTALLED VERSION</div>
+            <div class="ver-block-value not-installed" id="installed-ver-text">—</div>
+          </div>
+          <div>
+            <div class="ver-block-label">LATEST RELEASE</div>
+            <div class="ver-block-value" id="latest-ver-text">—</div>
+          </div>
+        </div>
+
+        <!-- Install directory -->
+        <div class="install-dir-row">
+          <span class="install-dir-label">INSTALL DIR</span>
+          <span class="install-dir-path" id="install-dir-text">—</span>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="install-actions">
+          <button class="btn-install" id="btn-do-install" onclick="doInstall()" disabled>
+            <span id="install-btn-icon">⬇</span>
+            <span id="install-btn-label">CHECK FOR RELEASES</span>
+          </button>
+          <button class="btn-uninstall" id="btn-uninstall" onclick="doUninstall()" style="display:none">
+            Uninstall
+          </button>
+        </div>
+
+        <!-- Progress -->
+        <div class="install-progress-wrap" id="install-progress-wrap">
+          <div class="prog-status-text" id="prog-status-text">Preparing…</div>
+          <div class="prog-track">
+            <div class="prog-fill" id="prog-fill"></div>
+          </div>
+          <div class="prog-bytes" id="prog-bytes"></div>
+        </div>
+
+        <div class="install-msg" id="install-msg"></div>
+
+        <!-- Latest release notes -->
+        <div class="release-notes" id="release-notes-block" style="display:none">
+          <div class="release-notes-head">RELEASE NOTES</div>
+          <div class="release-notes-body" id="release-notes-body"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app-layout -->
+
+<!-- Toast container -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ══ CONFIG ════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://tzehikqnnzaykyaomzer.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWhpa3FubnpheWt5YW9temVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3OTMxMzMsImV4cCI6MjA5NjM2OTEzM30.Trm5ha1xSr5MvQ-s3AKDdcBncdVCH_xi3CjhVfQaLfo';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+});
+
+// ══ STATE ══════════════════════════════════════════════════════
+let currentUser    = null;
+let currentProfile = null;
+let groupsCache    = [];
+let tasksCache     = [];
+let gamePath       = null;
+
+const HAS_ACCESS_ROLES = ['developer', 'admin'];
+
+// ══ AUTH ═══════════════════════════════════════════════════════
+async function initAuth() {
+  // Try restoring persisted session
+  const storedSession = await window.electron.storeGet('supabase_session');
+  if (storedSession) {
+    try {
+      await sb.auth.setSession(storedSession);
+    } catch {}
+  }
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    await handleSignedIn(session);
+  }
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN') {
+      await window.electron.storeSet('supabase_session', session);
+      await handleSignedIn(session);
+    } else if (event === 'SIGNED_OUT') {
+      await window.electron.storeSet('supabase_session', null);
+      handleSignedOut();
+    } else if (event === 'TOKEN_REFRESHED') {
+      await window.electron.storeSet('supabase_session', session);
+    }
+  });
+}
+
+async function handleSignedIn(session) {
+  currentUser = session.user;
+  const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+  currentProfile = data;
+
+  // Update sidebar UI
+  const name = currentProfile?.display_name || currentUser.email.split('@')[0];
+  const role = currentProfile?.role || 'user';
+  document.getElementById('user-initial').textContent = name.slice(0,1).toUpperCase();
+  document.getElementById('user-name-text').textContent = name;
+  document.getElementById('user-role-text').textContent = role.toUpperCase();
+
+  document.getElementById('sidebar').style.display = 'flex';
+  showPage('play', document.getElementById('nav-play'));
+  document.getElementById('page-auth').style.display = 'none';
+
+  await loadAll();
+}
+
+function handleSignedOut() {
+  currentUser = null;
+  currentProfile = null;
+  document.getElementById('sidebar').style.display = 'none';
+  showPage('auth', null);
+  document.getElementById('page-auth').style.display = 'flex';
+}
+
+async function doSignIn() {
+  const email = document.getElementById('in-email').value.trim();
+  const pass  = document.getElementById('in-pass').value;
+  setAuthMsg('');
+  document.getElementById('signin-btn').disabled = true;
+  document.getElementById('signin-btn').textContent = 'Entering…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  document.getElementById('signin-btn').disabled = false;
+  document.getElementById('signin-btn').textContent = 'Enter the Forge';
+  if (error) setAuthMsg(error.message);
+}
+
+async function doSignUp() {
+  const name  = document.getElementById('up-name').value.trim();
+  const email = document.getElementById('up-email').value.trim();
+  const pass  = document.getElementById('up-pass').value;
+  setAuthMsg('');
+  if (!name) { setAuthMsg('Display name required.'); return; }
+  const { error } = await sb.auth.signUp({
+    email, password: pass,
+    options: { data: { display_name: name } }
+  });
+  if (error) { setAuthMsg(error.message); return; }
+  document.getElementById('auth-msg').style.color = 'var(--teal2)';
+  setAuthMsg('Account forged! Check your email to confirm, then sign in.');
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+}
+
+function switchTab(t) {
+  document.getElementById('form-in').style.display = t === 'in' ? '' : 'none';
+  document.getElementById('form-up').style.display = t === 'up' ? '' : 'none';
+  document.getElementById('tab-in').classList.toggle('active', t === 'in');
+  document.getElementById('tab-up').classList.toggle('active', t === 'up');
+  setAuthMsg('');
+  document.getElementById('auth-msg').style.color = 'var(--blood)';
+}
+
+function setAuthMsg(msg) {
+  document.getElementById('auth-msg').textContent = msg;
+}
+
+// ══ NAVIGATION ════════════════════════════════════════════════
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => {
+    if (p.id === 'page-auth') return; // don't hide auth via nav
+    p.classList.remove('active');
+  });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) { pg.classList.add('active'); }
+  if (btn) btn.classList.add('active');
+}
+
+// ══ DATA ══════════════════════════════════════════════════════
+async function loadAll() {
+  await Promise.all([
+    loadPlaytest(),
+    loadNews(),
+    loadRoadmap(),
+    detectGame(),
+  ]);
+}
+
+// ── Playtest status ──────────────────────────────────────────
+async function loadPlaytest() {
+  const { data } = await sb.from('playtest_status').select('*').maybeSingle();
+  const pip  = document.getElementById('pt-pip');
+  const text = document.getElementById('pt-text');
+  if (!data) { text.textContent = 'Playtest info unavailable'; return; }
+  if (data.status === 'open') {
+    pip.className = 'pt-pip open';
+    text.textContent = `Playtest Open${data.platform ? ' — ' + data.platform : ''}`;
+  } else if (data.status === 'soon') {
+    pip.className = 'pt-pip soon';
+    text.textContent = `Playtest Coming Soon${data.eta ? ' · ' + data.eta : ''}`;
+  } else {
+    pip.className = 'pt-pip';
+    text.textContent = data.notes || 'Closed Alpha — Not Yet Accepting Players';
+  }
+
+  // Show appropriate section based on role
+  const role = currentProfile?.role || 'user';
+  const hasAccess = HAS_ACCESS_ROLES.includes(role);
+  document.getElementById('launch-section').style.display    = hasAccess ? '' : 'none';
+  document.getElementById('no-access-section').style.display = hasAccess ? 'none' : '';
+}
+
+// ── News / updates ───────────────────────────────────────────
+async function loadNews() {
+  const { data } = await sb.from('public_updates')
+    .select('*, profiles(display_name)')
+    .order('pinned', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(30);
+
+  const list = document.getElementById('news-list');
+  list.innerHTML = '';
+  if (!data?.length) {
+    list.innerHTML = '<div class="news-empty">The scrolls are silent — no chronicles yet.</div>';
+    return;
+  }
+  data.forEach(u => {
+    const date = new Date(u.created_at).toLocaleDateString('en-US',
+      { year:'numeric', month:'short', day:'numeric' });
+    const el = document.createElement('div');
+    el.className = 'news-entry';
+    el.innerHTML = `
+      <div class="news-date">${u.pinned ? '📌 ' : ''}${date}</div>
+      <div>
+        <div class="news-entry-title">${u.title}</div>
+        <div class="news-body">${u.body}</div>
+        ${u.tag ? `<span class="news-tag">${u.tag}</span>` : ''}
+        ${u.profiles?.display_name
+          ? `<div style="font-family:'Cinzel',serif;font-size:9px;color:var(--ink4);margin-top:5px;letter-spacing:.06em">— ${u.profiles.display_name}</div>`
+          : ''}
+      </div>
+    `;
+    list.appendChild(el);
+  });
+}
+
+// ── Roadmap ──────────────────────────────────────────────────
+async function loadRoadmap() {
+  const [{ data: groups }, { data: tasks }] = await Promise.all([
+    sb.from('task_groups').select('*').order('sort_order'),
+    sb.from('tasks').select('*').order('sort_order'),
+  ]);
+  groupsCache = groups || [];
+  tasksCache  = tasks  || [];
+  renderRoadmap();
+}
+
+function renderRoadmap() {
+  const total = tasksCache.length;
+  const done  = tasksCache.filter(t => t.state === 'done').length;
+  const pct   = total ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById('rm-pct-label').textContent = `${done} / ${total} · ${pct}%`;
+  document.getElementById('rm-bar').style.width = pct + '%';
+
+  const list = document.getElementById('rm-groups');
+  list.innerHTML = '';
+
+  groupsCache.forEach(g => {
+    const tasks = tasksCache.filter(t => t.group_id === g.id);
+    const gdone = tasks.filter(t => t.state === 'done').length;
+    const gwip  = tasks.filter(t => t.state === 'in-progress').length;
+    const gpct  = tasks.length ? Math.round((gdone / tasks.length) * 100) : 0;
+    const allDone = tasks.length > 0 && gdone === tasks.length;
+    const isActive = gwip > 0;
+
+    const row = document.createElement('div');
+    row.className = 'group-row';
+
+    const badge = allDone
+      ? '<span class="gr-badge done">COMPLETE</span>'
+      : isActive ? '<span class="gr-badge active">ACTIVE</span>' : '';
+
+    const rune = { done: '✓', 'in-progress': '◐', todo: '○' };
+
+    row.innerHTML = `
+      <div class="group-row-head" onclick="toggleGroup(this)">
+        <span class="gr-icon">${g.icon || '⚔'}</span>
+        <span class="gr-name">${g.name}</span>
+        ${badge}
+        <span class="gr-pct">${gdone}/${tasks.length} · ${gpct}%</span>
+        <span style="font-size:11px;color:var(--ink4);margin-left:4px">▸</span>
+      </div>
+      <div class="gr-mini-track">
+        <div class="gr-mini-fill" style="width:${gpct}%"></div>
+      </div>
+      <div class="gr-tasks">
+        ${tasks.map(t => {
+          const cls = t.state === 'done' ? 'done' : t.state === 'in-progress' ? 'wip' : '';
+          return `<div class="gr-task-item ${cls}">
+            <span class="task-rune">${rune[t.state] || '○'}</span>
+            ${t.name}
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function toggleGroup(head) {
+  const tasks = head.parentElement.querySelector('.gr-tasks');
+  const arrow = head.querySelector('span:last-child');
+  const isOpen = tasks.classList.toggle('open');
+  arrow.textContent = isOpen ? '▾' : '▸';
+}
+
+// ══ GAME LAUNCH ═══════════════════════════════════════════════
+async function detectGame() {
+  // Check stored path first
+  const stored = await window.electron.storeGet('game_path');
+  const result = await window.electron.detectGame(stored);
+  if (result.found) {
+    gamePath = result.path;
+    setGamePath(gamePath, true);
+  } else {
+    gamePath = null;
+    setGamePath(null, false);
+  }
+}
+
+function setGamePath(p, found) {
+  const el = document.getElementById('game-path-text');
+  const btn = document.getElementById('launch-btn');
+  const status = document.getElementById('launch-status');
+  if (found && p) {
+    el.textContent = p;
+    btn.disabled = false;
+    status.textContent = '✓ Game located';
+    status.className = 'launch-status ok';
+  } else {
+    el.textContent = 'Game not found — click Locate to set path';
+    btn.disabled = true;
+    status.textContent = 'Locate the game executable to enable launch';
+    status.className = 'launch-status';
+  }
+}
+
+async function browseForGame() {
+  const p = await window.electron.browseGame();
+  if (!p) return;
+  await window.electron.storeSet('game_path', p);
+  gamePath = p;
+  setGamePath(p, true);
+  toast('Game path saved.');
+}
+
+async function launchGame() {
+  if (!gamePath) { toast('No game path set.', true); return; }
+  const btn = document.getElementById('launch-btn');
+  const status = document.getElementById('launch-status');
+  btn.disabled = true;
+  status.textContent = 'Launching…';
+  status.className = 'launch-status';
+
+  const result = await window.electron.launchGame(gamePath);
+
+  if (result.success) {
+    status.textContent = '⚒ Ironveil is running';
+    status.className = 'launch-status ok';
+    toast('Ironveil launched — forge your legend.');
+    setTimeout(() => { btn.disabled = false; }, 4000);
+  } else {
+    status.textContent = result.error || 'Launch failed.';
+    status.className = 'launch-status err';
+    btn.disabled = false;
+    toast(result.error || 'Launch failed.', true);
+  }
+}
+
+// ══ REALTIME ══════════════════════════════════════════════════
+function subscribeRealtime() {
+  sb.channel('launcher-feed')
+    .on('postgres_changes', { event:'*', schema:'public', table:'public_updates'  }, () => loadNews())
+    .on('postgres_changes', { event:'*', schema:'public', table:'task_groups'     }, () => loadRoadmap())
+    .on('postgres_changes', { event:'*', schema:'public', table:'tasks'           }, () => loadRoadmap())
+    .on('postgres_changes', { event:'*', schema:'public', table:'playtest_status' }, () => loadPlaytest())
+    .subscribe();
+}
+
+// ══ TOAST ═════════════════════════════════════════════════════
+function toast(msg, err = false) {
+  const container = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = 'toast' + (err ? ' err' : '');
+  el.textContent = msg;
+  container.appendChild(el);
+  requestAnimationFrame(() => { requestAnimationFrame(() => el.classList.add('show')); });
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 300);
+  }, 3200);
+}
+
+// ══ INSTALL SYSTEM ════════════════════════════════════════════
+// GitHub config is stored in Supabase `launcher_config` table so
+// the PAT never lives in the client bundle.
+//
+// Expected row in launcher_config (single row, id = 'github'):
+//   { id: 'github', owner: '...', repo: '...', token: '...' }
+
+let ghConfig      = null;  // { owner, repo, token }
+let latestRelease = null;  // latest release object from GitHub
+let installState  = {};    // { installed, installedVer, installDir, exePath }
+
+// Unsubscribe helpers for IPC listeners
+let _offProgress, _offStatus, _offDone;
+
+async function loadGithubConfig() {
+  const { data, error } = await sb
+    .from('launcher_config')
+    .select('owner, repo, token')
+    .eq('id', 'github')
+    .maybeSingle();
+
+  if (error || !data) {
+    console.warn('[install] No launcher_config found:', error?.message);
+    return null;
+  }
+  return data;
+}
+
+async function initInstallPage() {
+  setInstallMsg('');
+
+  // 1. Load install info from disk
+  installState = await window.electron.installInfo();
+  renderInstallState();
+
+  // 2. Fetch GitHub config from Supabase
+  ghConfig = await loadGithubConfig();
+  if (!ghConfig) {
+    setInstallMsg('GitHub config not found in Supabase launcher_config.', true);
+    return;
+  }
+
+  // 3. Check for updates
+  await checkForUpdate();
+}
+
+async function checkForUpdate() {
+  document.getElementById('install-sub').textContent = 'Checking forge servers…';
+  document.getElementById('latest-ver-text').textContent = '…';
+
+  const result = await window.electron.checkUpdate(ghConfig);
+
+  if (!result.success) {
+    setInstallMsg('Could not reach forge servers: ' + result.error, true);
+    document.getElementById('install-sub').textContent = 'Update check failed';
+    document.getElementById('latest-ver-text').textContent = '—';
+    return;
+  }
+
+  latestRelease = result.latestRelease;
+
+  // Update version display
+  document.getElementById('latest-ver-text').textContent = result.latestVersion;
+
+  const installedEl = document.getElementById('installed-ver-text');
+  if (result.installedVersion) {
+    installedEl.textContent = result.installedVersion;
+    installedEl.className = 'ver-block-value ' +
+      (result.upToDate ? 'up-to-date' : 'outdated');
+  } else {
+    installedEl.textContent = 'Not installed';
+    installedEl.className = 'ver-block-value not-installed';
+  }
+
+  // Status subtitle
+  if (!installState.installed) {
+    document.getElementById('install-sub').textContent = 'Ready to install';
+  } else if (result.upToDate) {
+    document.getElementById('install-sub').textContent = 'You\'re up to date';
+  } else {
+    document.getElementById('install-sub').textContent =
+      `Update available: ${result.installedVersion} → ${result.latestVersion}`;
+  }
+
+  // Release notes
+  if (latestRelease?.body) {
+    document.getElementById('release-notes-block').style.display = '';
+    document.getElementById('release-notes-body').textContent = latestRelease.body;
+  }
+
+  // Arm the install button
+  enableInstallButton(result);
+}
+
+function renderInstallState() {
+  const { installed, installedVer, installDir } = installState;
+
+  document.getElementById('install-dir-text').textContent = installDir || '—';
+  document.getElementById('installed-ver-text').textContent =
+    installedVer || 'Not installed';
+
+  document.getElementById('btn-uninstall').style.display = installed ? '' : 'none';
+}
+
+function enableInstallButton(updateResult) {
+  const btn   = document.getElementById('btn-do-install');
+  const label = document.getElementById('install-btn-label');
+  const icon  = document.getElementById('install-btn-icon');
+
+  btn.disabled = false;
+
+  if (!installState.installed) {
+    icon.textContent  = '⬇';
+    label.textContent = 'INSTALL IRONVEIL';
+  } else if (!updateResult.upToDate) {
+    icon.textContent  = '⬆';
+    label.textContent = `UPDATE TO ${updateResult.latestVersion}`;
+  } else {
+    icon.textContent  = '✓';
+    label.textContent = 'REINSTALL';
+  }
+}
+
+async function doInstall() {
+  if (!ghConfig || !latestRelease) {
+    setInstallMsg('Release info not loaded. Reload the page.', true);
+    return;
+  }
+
+  // Pick the platform-appropriate asset
+  const platform = navigator.platform.toLowerCase();
+  const isWin    = platform.includes('win');
+  const isMac    = platform.includes('mac');
+
+  const assets = latestRelease.assets || [];
+  const asset  = assets.find(a => {
+    const n = a.name.toLowerCase();
+    if (isWin) return n.endsWith('.exe') || n.endsWith('.zip');
+    if (isMac) return n.endsWith('.dmg') || n.endsWith('.zip');
+    return n.endsWith('.zip');
+  }) || assets[0];
+
+  if (!asset) {
+    setInstallMsg('No downloadable asset found in this release.', true);
+    return;
+  }
+
+  // Lock UI
+  const btn = document.getElementById('btn-do-install');
+  const uninstBtn = document.getElementById('btn-uninstall');
+  btn.disabled = true;
+  uninstBtn.disabled = true;
+  setInstallMsg('');
+  showProgress(true);
+
+  // Wire up IPC listeners (clean up any previous)
+  if (_offProgress) _offProgress();
+  if (_offStatus)   _offStatus();
+  if (_offDone)     _offDone();
+
+  _offProgress = window.electron.onInstallProgress(({ percent, bytesReceived, totalBytes }) => {
+    document.getElementById('prog-fill').style.width = percent + '%';
+    if (totalBytes > 0) {
+      document.getElementById('prog-bytes').textContent =
+        `${fmtBytes(bytesReceived)} / ${fmtBytes(totalBytes)} — ${percent}%`;
+    } else {
+      document.getElementById('prog-bytes').textContent = `${fmtBytes(bytesReceived)} downloaded`;
+    }
+  });
+
+  _offStatus = window.electron.onInstallStatus(({ message }) => {
+    document.getElementById('prog-status-text').textContent = message;
+  });
+
+  _offDone = window.electron.onInstallDone(async ({ success, error }) => {
+    _offProgress(); _offStatus(); _offDone();
+    showProgress(false);
+    btn.disabled = false;
+    uninstBtn.disabled = false;
+
+    if (success) {
+      setInstallMsg('Installation complete — game is ready to launch.', false);
+      toast('Ironveil installed successfully.');
+      // Refresh state
+      installState = await window.electron.installInfo();
+      renderInstallState();
+      await checkForUpdate();
+      // Also refresh the launch page path
+      await detectGame();
+    } else {
+      setInstallMsg('Installation failed: ' + (error || 'Unknown error'), true);
+      toast('Install failed: ' + (error || 'Unknown error'), true);
+    }
+  });
+
+  // Kick off download
+  await window.electron.installGame({
+    owner:      ghConfig.owner,
+    repo:       ghConfig.repo,
+    token:      ghConfig.token,
+    assetId:    asset.id,
+    assetName:  asset.name,
+    version:    latestRelease.tag_name,
+    installDir: installState.installDir,
+  });
+}
+
+async function doUninstall() {
+  if (!confirm('Remove Ironveil from your system?')) return;
+  const btn = document.getElementById('btn-uninstall');
+  btn.disabled = true;
+  const result = await window.electron.uninstallGame();
+  if (result.success) {
+    toast('Ironveil uninstalled.');
+    installState = await window.electron.installInfo();
+    renderInstallState();
+    document.getElementById('installed-ver-text').textContent = 'Not installed';
+    document.getElementById('installed-ver-text').className = 'ver-block-value not-installed';
+    enableInstallButton({ upToDate: false, latestVersion: latestRelease?.tag_name || '—' });
+    setInstallMsg('Uninstalled.', false);
+  } else {
+    toast('Uninstall failed: ' + result.error, true);
+    btn.disabled = false;
+  }
+}
+
+function showProgress(visible) {
+  document.getElementById('install-progress-wrap').classList.toggle('visible', visible);
+  if (!visible) {
+    document.getElementById('prog-fill').style.width = '0%';
+    document.getElementById('prog-bytes').textContent = '';
+    document.getElementById('prog-status-text').textContent = 'Preparing…';
+  }
+}
+
+function setInstallMsg(msg, isErr = false) {
+  const el = document.getElementById('install-msg');
+  el.textContent = msg;
+  el.className   = 'install-msg' + (isErr ? ' err' : msg ? ' ok' : '');
+}
+
+function fmtBytes(b) {
+  if (b >= 1_073_741_824) return (b / 1_073_741_824).toFixed(2) + ' GB';
+  if (b >= 1_048_576)     return (b / 1_048_576).toFixed(1) + ' MB';
+  if (b >= 1024)          return (b / 1024).toFixed(0) + ' KB';
+  return b + ' B';
+}
+
+// Lazy-load the install page when first navigated to
+const _origShowPage = showPage;
+window.showPage = function(id, btn) {
+  _origShowPage(id, btn);
+  if (id === 'install' && currentUser) {
+    initInstallPage();
+  }
+};
+
+// ══ INIT ══════════════════════════════════════════════════════
+(async () => {
+  await initAuth();
+  subscribeRealtime();
+})();
+</script>
+</body>
+</html>
