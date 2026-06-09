@@ -13,6 +13,7 @@
   "build": {
     "appId": "com.ironveil.launcher",
     "productName": "Ironveil Launcher",
+    "forceCodeSigning": false,
     "directories": {
       "output": "dist"
     },
