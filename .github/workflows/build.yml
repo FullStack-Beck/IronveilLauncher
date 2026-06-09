@@ -1,38 +1,31 @@
 name: Build Launcher
-
 on:
   push:
     tags:
       - 'v*'
-
 jobs:
   build:
     strategy:
       matrix:
         os: [windows-latest, macos-latest]
-
     runs-on: ${{ matrix.os }}
-
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+      WIN_CSC_LINK: ""
+      WIN_CSC_KEY_PASSWORD: ""
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Install dependencies
         run: npm install
-
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
         run: npm run build:win
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
-
       - name: Build (Mac)
         if: matrix.os == 'macos-latest'
         run: npm run build:mac
-
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
