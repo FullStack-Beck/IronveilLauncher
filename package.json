@@ -28,7 +28,8 @@
       "oneClick": true,
       "installerIcon": "assets/icon.ico",
       "uninstallerIcon": "assets/icon.ico",
-      "shortcutName": "Ironveil Launcher"
+      "shortcutName": "Ironveil Launcher",
+      "artifactName": "IronveilSetup.exe"
     }
   },
   "devDependencies": {
