@@ -13,7 +13,6 @@
   "build": {
     "appId": "com.ironveil.launcher",
     "productName": "Ironveil Launcher",
-    "forceCodeSigning": false,
     "directories": {
       "output": "dist"
     },
@@ -23,9 +22,7 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.png",
-      "sign": null,
-      "signingHashAlgorithms": null
+      "icon": "assets/icon.png"
     },
     "nsis": {
       "oneClick": true,
