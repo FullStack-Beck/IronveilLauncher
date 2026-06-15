@@ -13,7 +13,6 @@
   "build": {
     "appId": "com.ironveil.launcher",
     "productName": "Ironveil Launcher",
-    "forceCodeSigning": false,
     "directories": {
       "output": "dist"
     },
@@ -23,12 +22,14 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.ico"
     },
     "nsis": {
       "oneClick": true,
-      "installerIcon": "assets/icon.png",
-      "shortcutName": "Ironveil Launcher"
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "shortcutName": "Ironveil Launcher",
+      "artifactName": "IronveilSetup.exe"
     }
   },
   "devDependencies": {
