@@ -3,86 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project Ironveil</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<title>Ironveil Launcher</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* ══ TOKENS ════════════════════════════════════════════════ */
+/* ── TOKENS (exact match to website) ───────────────────────── */
 :root {
-  --parch:    #f5ead4;
-  --parch2:   #ede0bc;
-  --parch3:   #e5d0a0;
-  --parch4:   #d8c088;
-  --ink:      #1a1208;
-  --ink2:     #3b2c0e;
-  --ink3:     #6b4e22;
-  --ink4:     #8c6d3f;
-  --ink5:     #b8924a;
-  --blood:    #7a1c1c;
-  --teal:     #2d6b5a;
-  --teal2:    #3a8a72;
-  --teal3:    #4aaa8e;
-  --gold:     #8b6910;
-  --gold2:    #b8900f;
-  --gold3:    #d4a820;
-  --gold4:    #f0c83a;
-  --border:   rgba(139,105,20,.2);
-  --border2:  rgba(139,105,20,.4);
-  --border3:  rgba(139,105,20,.65);
-  --shadow:   rgba(26,18,8,.25);
-  --shadow2:  rgba(26,18,8,.5);
-  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+  --parch:   #f5ead4;
+  --parch2:  #ede0bc;
+  --parch3:  #e5d0a0;
+  --parch4:  #d8c088;
+  --ink:     #1a1208;
+  --ink2:    #3b2c0e;
+  --ink3:    #6b4e22;
+  --ink4:    #8c6d3f;
+  --ink5:    #b8924a;
+  --blood:   #7a1c1c;
+  --teal:    #2d6b5a;
+  --teal2:   #3a8a72;
+  --teal3:   #4aaa8e;
+  --gold:    #8b6910;
+  --gold2:   #b8900f;
+  --gold3:   #d4a820;
+  --gold4:   #f0c83a;
+  --border:  rgba(139,105,20,.2);
+  --border2: rgba(139,105,20,.4);
+  --border3: rgba(139,105,20,.65);
+  --shadow:  rgba(26,18,8,.28);
+  --shadow2: rgba(26,18,8,.55);
 }
 
-/* ══ RESET ══════════════════════════════════════════════════ */
+/* ── RESET ──────────────────────────────────────────────────── */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html, body { height:100%; overflow:hidden; user-select:none; }
 
 body {
   background: var(--parch);
-  background-image: var(--noise);
   color: var(--ink);
   font-family: 'Crimson Pro', serif;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 17px;
+  line-height: 1.7;
   display: flex;
   flex-direction: column;
 }
 
-/* Vignette */
-body::after {
-  content: '';
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background: radial-gradient(ellipse 120% 120% at 50% 40%,
-    transparent 45%, rgba(80,50,5,.12) 100%);
+/* parchment noise — same as website */
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E");
+  opacity:.55; mix-blend-mode:multiply;
 }
 
-/* ══ TITLEBAR (custom drag region) ═════════════════════════ */
+/* ── TITLEBAR (custom, frameless) ───────────────────────────── */
 .titlebar {
   height: 40px;
-  background: linear-gradient(to bottom, var(--ink2), var(--ink));
+  background: rgba(10,7,3,.92);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
+  padding: 0 14px 0 16px;
   -webkit-app-region: drag;
   flex-shrink: 0;
   position: relative;
-  z-index: 200;
-  border-bottom: 1px solid rgba(139,105,20,.3);
+  z-index: 500;
+  border-bottom: 1px solid rgba(139,105,20,.25);
+}
+
+.titlebar::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: repeating-linear-gradient(90deg, var(--gold2) 0, var(--gold2) 4px, transparent 4px, transparent 8px);
+  opacity: .3;
 }
 
 .titlebar-logo {
   font-family: 'Cinzel', serif;
-  font-size: 11px;
-  letter-spacing: .22em;
-  color: rgba(200,160,40,.7);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 10.5px; letter-spacing: .22em;
+  color: rgba(200,160,40,.6);
+  display: flex; align-items: center; gap: 8px;
 }
 
-.titlebar-logo .mark { font-size: 14px; color: var(--gold3); }
+.titlebar-logo .mark { color: var(--gold3); font-size: 13px; }
 
 .titlebar-controls {
   display: flex;
@@ -97,15 +98,14 @@ body::after {
   background: transparent;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  color: rgba(139,105,20,.45);
+  color: rgba(139,105,20,.4);
   transition: background .15s, color .15s;
-  font-size: 13px;
-  line-height: 1;
+  font-size: 13px; line-height: 1;
 }
 .wc-btn:hover        { background: rgba(139,105,20,.12); color: rgba(200,155,30,.85); }
 .wc-close:hover      { background: rgba(140,30,20,.35);  color: rgba(255,180,160,.9); }
 
-/* ══ LAYOUT ═════════════════════════════════════════════════ */
+/* ── SHELL ──────────────────────────────────────────────────── */
 .app-layout {
   flex: 1;
   display: flex;
@@ -114,920 +114,610 @@ body::after {
   z-index: 1;
 }
 
-/* ══ SIDEBAR ════════════════════════════════════════════════ */
+/* ── SIDEBAR ────────────────────────────────────────────────── */
 .sidebar {
-  width: 220px;
-  background: linear-gradient(180deg, var(--ink2) 0%, var(--ink) 100%);
-  background-image: var(--noise);
-  border-right: 1px solid rgba(139,105,20,.25);
+  width: 210px;
+  background: linear-gradient(180deg, rgba(10,7,3,.97) 0%, rgba(26,18,8,.97) 100%);
+  border-right: 1px solid rgba(139,105,20,.22);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
+  backdrop-filter: blur(4px);
 }
 
 .sidebar-hero {
-  padding: 28px 20px 20px;
+  padding: 22px 18px 18px;
   text-align: center;
-  border-bottom: 1px solid rgba(139,105,20,.2);
+  border-bottom: 1px solid rgba(139,105,20,.18);
   position: relative;
 }
 
 .sidebar-hero::after {
   content: '';
-  position: absolute; bottom: 0; left: 14px; right: 14px; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(200,150,10,.35), transparent);
+  position: absolute; bottom: 0; left: 12px; right: 12px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,150,10,.3), transparent);
 }
 
-.sb-emblem {
-  font-size: 36px;
-  display: block;
-  margin-bottom: 8px;
-  filter: drop-shadow(0 0 12px rgba(200,150,10,.4));
-  animation: emblemGlow 4s ease-in-out infinite;
-}
-
-@keyframes emblemGlow {
-  0%,100% { filter: drop-shadow(0 0 8px rgba(200,150,10,.3)); }
-  50%      { filter: drop-shadow(0 0 18px rgba(200,150,10,.6)); }
-}
-
-.sb-title {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: 13px;
-  color: var(--gold3);
-  letter-spacing: .06em;
-  line-height: 1.2;
-  margin-bottom: 2px;
+/* Use the real title image in sidebar */
+.sb-logo-img {
+  width: 140px;
+  filter: drop-shadow(0 2px 12px rgba(0,0,0,.7));
+  margin-bottom: 6px;
 }
 
 .sb-sub {
   font-family: 'Cinzel', serif;
-  font-size: 8.5px;
-  letter-spacing: .22em;
-  color: rgba(139,105,20,.5);
+  font-size: 8.5px; letter-spacing: .22em;
+  color: rgba(139,105,20,.45);
 }
 
-/* Nav */
-.sidebar-nav {
-  flex: 1;
-  padding: 10px 0;
-  overflow-y: auto;
-}
+/* Nav — mirrors website nav style */
+.sidebar-nav { flex: 1; padding: 8px 0; overflow-y: auto; }
 
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 11px 18px;
-  color: rgba(176,144,112,.65);
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  letter-spacing: .1em;
-  cursor: pointer;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  transition: all .2s;
-  position: relative;
+  display: flex; align-items: center; gap: 11px;
+  padding: 11px 16px;
+  color: rgba(176,144,112,.55);
+  font-family: 'Cinzel', serif; font-size: 10.5px; letter-spacing: .14em;
+  cursor: pointer; border: none; background: none;
+  width: 100%; text-align: left;
+  transition: all .2s; position: relative;
 }
-
 .nav-item::before {
-  content: '';
-  position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
-  background: var(--gold3);
-  opacity: 0; transition: opacity .2s;
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--gold3); opacity: 0; transition: opacity .2s;
 }
-
-.nav-item:hover { color: rgba(220,170,40,.85); background: rgba(139,105,20,.07); }
-.nav-item.active { color: var(--gold3); background: rgba(139,105,20,.13); }
+.nav-item:hover { color: rgba(220,170,40,.8); background: rgba(139,105,20,.06); }
+.nav-item.active { color: var(--gold3); background: rgba(139,105,20,.1); }
 .nav-item.active::before { opacity: 1; }
-.nav-icon { font-size: 14px; width: 16px; text-align: center; flex-shrink: 0; }
+.nav-icon { font-size: 13px; width: 16px; text-align: center; flex-shrink: 0; }
 
-/* User chip */
+/* User chip — same pattern as website */
 .sidebar-user {
-  padding: 14px 16px;
-  border-top: 1px solid rgba(139,105,20,.2);
-  background: rgba(0,0,0,.15);
+  padding: 12px 14px;
+  border-top: 1px solid rgba(139,105,20,.18);
+  background: rgba(0,0,0,.2);
 }
-
 .user-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 9px; margin-bottom: 9px;
 }
-
 .user-avatar {
-  width: 32px; height: 32px;
-  background: rgba(139,105,20,.25);
-  border: 1px solid rgba(139,105,20,.4);
+  width: 30px; height: 30px;
+  background: rgba(139,105,20,.2);
+  border: 1px solid rgba(139,105,20,.35);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Cinzel', serif;
-  font-size: 13px;
-  color: var(--gold3);
+  font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold3);
   flex-shrink: 0;
 }
-
 .user-name-text {
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  color: rgba(220,170,40,.8);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 120px;
+  font-family: 'Cinzel', serif; font-size: 10.5px;
+  color: rgba(220,170,40,.75);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px;
 }
-
 .user-role-text {
-  font-family: 'Cinzel', serif;
-  font-size: 9px;
-  letter-spacing: .12em;
-  color: rgba(139,105,20,.55);
-  margin-top: 1px;
+  font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: .12em;
+  color: rgba(139,105,20,.5); margin-top: 1px;
 }
 
+/* btn mirrors website .btn */
 .btn-signout {
-  width: 100%;
-  padding: 7px;
-  background: none;
-  border: 1px solid rgba(139,105,20,.25);
-  color: rgba(139,105,20,.6);
-  font-family: 'Cinzel', serif;
-  font-size: 10px;
-  letter-spacing: .1em;
-  cursor: pointer;
-  transition: all .2s;
+  width: 100%; padding: 7px;
+  background: none; border: 1.5px solid rgba(139,105,20,.22);
+  color: rgba(139,105,20,.55);
+  font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .1em;
+  cursor: pointer; transition: all .2s;
 }
 .btn-signout:hover { border-color: rgba(139,105,20,.5); color: rgba(200,150,10,.8); }
 
-/* ══ MAIN AREA ══════════════════════════════════════════════ */
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+/* ── MAIN ───────────────────────────────────────────────────── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── PAGES ──────────────────────────────────────────────────── */
+.page { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
+.page.active { display: flex; }
+
+/* ═══════════════════════════════════════════════════════════════
+   AUTH PAGE — mirrors website auth modal style
+═══════════════════════════════════════════════════════════════ */
+#page-auth {
+  align-items: center; justify-content: center;
+  background: var(--parch);
+  position: relative;
 }
 
-/* ══ PAGES ══════════════════════════════════════════════════ */
-.page { display: none; flex: 1; overflow-y: auto; }
-.page.active { display: flex; flex-direction: column; }
+/* landscape art behind auth — same as website hero */
+#page-auth::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url('../../assets/ironveilmiddlenotitle.png') center 30% / cover no-repeat;
+  z-index: 0;
+}
 
-/* ══ AUTH PAGE ══════════════════════════════════════════════ */
-#page-auth {
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(160deg, var(--parch) 0%, var(--parch2) 100%);
+#page-auth::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(10,7,3,.6) 0%,
+    rgba(10,7,3,.35) 40%,
+    rgba(26,18,8,.75) 85%,
+    var(--parch) 100%
+  );
+  z-index: 0;
 }
 
 .auth-card {
+  position: relative; z-index: 2;
   width: 380px;
   background: var(--parch2);
   border: 2px solid var(--border2);
-  box-shadow: 0 16px 48px var(--shadow2);
-  animation: slideUp .4s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 24px 64px var(--shadow2);
+  animation: unroll .28s cubic-bezier(.34,1.56,.64,1);
 }
 
-@keyframes slideUp {
-  from { opacity:0; transform:translateY(24px); }
+@keyframes unroll {
+  from { opacity:0; transform:scaleY(.88) translateY(-16px); }
   to   { opacity:1; transform:none; }
 }
 
+/* Title logo above the card */
+.auth-logo-wrap {
+  position: relative; z-index: 2;
+  text-align: center; margin-bottom: 18px;
+}
+
+.auth-title-img {
+  width: clamp(200px, 42vw, 300px);
+  filter: drop-shadow(0 4px 24px rgba(0,0,0,.8)) drop-shadow(0 1px 4px rgba(0,0,0,.9));
+}
+
+.auth-eyebrow {
+  font-family: 'Cinzel', serif; font-size: 9.5px;
+  letter-spacing: .42em; color: rgba(240,200,58,.7);
+  margin-top: 6px;
+  position: relative; z-index: 2;
+  margin-bottom: 16px;
+}
+
+/* Mirrors website .auth-head */
 .auth-head {
-  background: var(--ink2);
-  padding: 30px 28px 22px;
-  text-align: center;
-  border-bottom: 2px solid rgba(139,105,20,.35);
+  background: var(--parch3);
+  border-bottom: 1.5px solid var(--border2);
+  padding: 18px 26px 14px; text-align: center;
 }
-
-.auth-emblem { font-size: 32px; display: block; margin-bottom: 8px; }
-
-.auth-title {
+.auth-head-title {
   font-family: 'Cinzel Decorative', serif;
-  font-size: 20px;
-  color: var(--gold3);
-  letter-spacing: .06em;
-  margin-bottom: 2px;
+  font-size: 17px; color: var(--ink); letter-spacing: .06em; margin-bottom: 2px;
 }
+.auth-head-sub { font-style: italic; font-size: 13.5px; color: var(--ink4); }
 
-.auth-subtitle {
-  font-family: 'Cinzel', serif;
-  font-size: 9.5px;
-  letter-spacing: .2em;
-  color: rgba(139,105,20,.55);
-}
-
-.auth-body { padding: 24px 26px 20px; }
+.auth-body { padding: 20px 24px 18px; }
 
 .auth-tabs {
-  display: flex;
+  display: flex; gap: 0; margin-bottom: 20px;
   border: 1px solid var(--border);
-  margin-bottom: 20px;
 }
-
 .auth-tab {
-  flex: 1; padding: 8px;
-  background: none; border: none;
-  font-family: 'Cinzel', serif;
-  font-size: 10px; letter-spacing: .12em;
-  color: var(--ink4); cursor: pointer;
+  flex: 1; padding: 8px; text-align: center;
+  font-family: 'Cinzel', serif; font-size: 10.5px; letter-spacing: .12em;
+  color: var(--ink4); cursor: pointer; border: none; background: none;
   transition: all .2s;
-  border-bottom: 2px solid transparent;
 }
-.auth-tab.active { background: var(--parch3); color: var(--gold2); border-bottom-color: var(--gold2); }
+.auth-tab.active { background: var(--parch3); color: var(--ink); border-bottom: 2px solid var(--gold2); }
 
-.field { margin-bottom: 14px; }
+.field { margin-bottom: 13px; }
 .field label {
-  display: block;
-  font-family: 'Cinzel', serif;
-  font-size: 9.5px;
-  letter-spacing: .16em;
-  color: var(--ink4);
-  margin-bottom: 5px;
+  display: block; font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: .16em; color: var(--ink4); margin-bottom: 5px;
 }
 .field input {
-  width: 100%;
-  background: var(--parch);
-  border: 1.5px solid var(--border);
-  color: var(--ink);
-  padding: 9px 12px;
-  font-family: 'Crimson Pro', serif;
-  font-size: 16px;
-  outline: none;
-  transition: border-color .2s;
+  width: 100%; background: var(--parch);
+  border: 1.5px solid var(--border); color: var(--ink);
+  padding: 9px 13px; font-family: 'Crimson Pro', serif;
+  font-size: 16px; outline: none; transition: border-color .2s;
 }
 .field input:focus { border-color: var(--gold2); }
 
+/* mirrors .auth-btn on website */
 .auth-btn {
   width: 100%; padding: 12px;
-  background: var(--ink2); color: var(--parch);
-  border: none; font-family: 'Cinzel', serif;
-  font-size: 11px; letter-spacing: .14em;
-  cursor: pointer; transition: background .2s;
-  margin-bottom: 10px;
+  background: var(--ink2); color: var(--parch); border: none;
+  font-family: 'Cinzel', serif; font-size: 11.5px; letter-spacing: .12em;
+  cursor: pointer; transition: background .2s; margin-bottom: 10px;
 }
 .auth-btn:hover { background: var(--ink); }
 .auth-btn:disabled { opacity: .5; cursor: default; }
 
 .auth-msg {
-  font-family: 'Cinzel', serif;
-  font-size: 10.5px;
-  letter-spacing: .06em;
-  text-align: center;
-  min-height: 16px;
-  color: var(--blood);
+  font-family: 'Cinzel', serif; font-size: 11px; color: var(--blood);
+  text-align: center; min-height: 18px; letter-spacing: .06em;
 }
 
-/* ══ PLAY PAGE ══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   PLAY PAGE — cinematic hero matching website
+═══════════════════════════════════════════════════════════════ */
 #page-play {
-  background: linear-gradient(160deg, var(--parch) 0%, var(--parch2) 60%);
-}
-
-.play-hero {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 40px;
-  text-align: center;
+  overflow: hidden;
   position: relative;
 }
 
-/* Ornamental background rune */
-.play-hero::before {
-  content: '⚒';
-  position: absolute;
-  font-size: 280px;
-  color: rgba(139,105,20,.04);
-  font-family: 'Cinzel', serif;
-  pointer-events: none;
-  line-height: 1;
+/* landscape parallax bg — exactly like website .hero-bg */
+.play-bg {
+  position: absolute; inset: 0;
+  background: url('../../assets/ironveilmiddlenotitle.png') center 30% / cover no-repeat;
+  will-change: transform;
 }
 
-.play-ornament {
-  font-size: 18px;
-  color: var(--gold2);
-  letter-spacing: .5em;
-  opacity: .5;
-  margin-bottom: 8px;
+/* cinematic vignette — exact copy of website */
+.play-vignette {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(10,7,3,.52) 0%,
+    rgba(10,7,3,.18) 30%,
+    rgba(10,7,3,.08) 55%,
+    rgba(26,18,8,.72) 82%,
+    var(--parch) 100%
+  );
+  z-index: 1;
+}
+
+/* scanlines — same as website */
+.play-vignette::after {
+  content:''; position:absolute; inset:0;
+  background: repeating-linear-gradient(0deg,rgba(0,0,0,.015) 0px,rgba(0,0,0,.015) 1px,transparent 1px,transparent 3px);
+  pointer-events: none;
+}
+
+.play-content {
+  position: relative; z-index: 2;
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px 40px 80px;
+  text-align: center;
+  overflow-y: auto;
+}
+
+/* title logo — same as website .hero-logo-img */
+.play-logo-img {
+  width: clamp(220px, 44vw, 560px);
+  filter: drop-shadow(0 8px 40px rgba(0,0,0,.7)) drop-shadow(0 2px 6px rgba(0,0,0,.9));
+  animation: heroFade 1.2s ease both;
+  margin-bottom: 2px;
 }
 
 .play-eyebrow {
-  font-family: 'Cinzel', serif;
-  font-size: 9.5px;
-  letter-spacing: .36em;
-  color: var(--ink4);
-  margin-bottom: 16px;
-  text-transform: uppercase;
-}
-
-.play-title {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: clamp(32px, 5vw, 56px);
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: .04em;
-  line-height: 1;
-  margin-bottom: 12px;
-  text-shadow: 2px 4px 16px rgba(139,105,20,.18);
+  font-family: 'Cinzel', serif; font-size: 9.5px;
+  letter-spacing: .42em; color: rgba(240,200,58,.7);
+  margin-bottom: 18px;
+  animation: heroFade 1.2s .1s ease both;
 }
 
 .play-tagline {
-  font-family: 'IM Fell English', serif;
-  font-style: italic;
-  font-size: 17px;
-  color: var(--ink3);
-  margin-bottom: 36px;
+  font-family: 'IM Fell English', serif; font-style: italic;
+  font-size: clamp(14px, 2vw, 19px);
+  color: rgba(245,234,212,.88); letter-spacing: .06em;
+  text-shadow: 0 2px 12px rgba(0,0,0,.7);
+  margin-bottom: 28px;
+  animation: heroFade 1.2s .2s ease both;
 }
 
-/* Playtest badge */
-.pt-banner {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 22px;
-  border: 1.5px solid var(--border2);
-  background: var(--parch2);
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  letter-spacing: .1em;
-  color: var(--ink3);
-  margin-bottom: 32px;
+/* stat pills — exact website .hero-stats */
+.play-stats {
+  display: flex; gap: 1px;
+  border: 1px solid rgba(240,200,58,.3);
+  background: rgba(0,0,0,.35); backdrop-filter: blur(6px);
+  margin-bottom: 24px;
+  animation: heroFade 1.2s .3s ease both;
 }
 
+.play-stat {
+  padding: 12px 22px; text-align: center;
+  border-right: 1px solid rgba(240,200,58,.2);
+}
+.play-stat:last-child { border-right: none; }
+
+.ps-val {
+  font-family: 'Cinzel', serif; font-size: 26px; font-weight: 700;
+  color: var(--gold4); line-height: 1; margin-bottom: 3px;
+}
+.ps-key {
+  font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: .26em;
+  color: rgba(245,234,212,.5);
+}
+
+/* playtest badge — exact .pt-badge */
+.pt-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 8px 20px;
+  border: 1px solid rgba(240,200,58,.25);
+  background: rgba(0,0,0,.3); backdrop-filter: blur(4px);
+  font-family: 'Cinzel', serif; font-size: 10px;
+  letter-spacing: .12em; color: rgba(245,234,212,.7);
+  animation: heroFade 1.2s .4s ease both;
+  margin-bottom: 24px;
+}
 .pt-pip {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--ink4);
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(245,234,212,.3);
   animation: pipPulse 2.5s ease-in-out infinite;
 }
 .pt-pip.open { background: var(--teal3); }
 .pt-pip.soon { background: var(--gold3); }
+
 @keyframes pipPulse {
   0%,100% { opacity:1; transform:scale(1); }
   50%      { opacity:.4; transform:scale(.75); }
 }
 
-/* The big launch button */
-.launch-area { position: relative; margin-bottom: 28px; }
-
-.btn-launch {
-  display: inline-flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 52px;
-  background: linear-gradient(135deg, var(--ink) 0%, var(--ink2) 100%);
-  border: 2px solid var(--gold2);
-  color: var(--parch);
-  font-family: 'Cinzel', serif;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: .2em;
-  cursor: pointer;
-  transition: all .25s;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(26,18,8,.35), inset 0 1px 0 rgba(200,150,10,.15);
+/* CTA buttons — mirrors .btn.ghost on the website */
+.play-cta {
+  display: flex; gap: 10px; align-items: center;
+  animation: heroFade 1.2s .35s ease both;
+  flex-wrap: wrap; justify-content: center;
+  margin-bottom: 20px;
 }
 
+.btn-ghost {
+  font-family: 'Cinzel', serif; font-size: 10.5px; letter-spacing: .12em;
+  cursor: pointer; transition: all .2s;
+  padding: 9px 22px;
+  background: rgba(0,0,0,.28); color: var(--parch);
+  border: 1.5px solid rgba(255,255,255,.32); backdrop-filter: blur(4px);
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-ghost:hover { background: rgba(0,0,0,.48); border-color: rgba(255,255,255,.6); }
+
+/* Primary — the big launch button, mirrors .btn.primary */
+.btn-launch {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 15px 44px;
+  background: linear-gradient(135deg, var(--ink) 0%, var(--ink2) 100%);
+  border: 1.5px solid var(--gold2); color: var(--parch);
+  font-family: 'Cinzel', serif; font-size: 14px; font-weight: 600; letter-spacing: .2em;
+  cursor: pointer; transition: all .25s; position: relative; overflow: hidden;
+  box-shadow: 0 4px 24px rgba(26,18,8,.4), inset 0 1px 0 rgba(200,150,10,.1);
+}
 .btn-launch::before {
   content: '';
   position: absolute; inset: 0;
   background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
-  opacity: 0;
-  transition: opacity .25s;
+  opacity: 0; transition: opacity .25s;
 }
-
 .btn-launch:hover::before { opacity: 1; }
-.btn-launch:hover { box-shadow: 0 6px 32px rgba(139,105,20,.4), 0 0 0 1px var(--gold3); transform: translateY(-1px); }
+.btn-launch:hover { box-shadow: 0 6px 32px rgba(139,105,20,.5); transform: translateY(-1px); }
 .btn-launch:active { transform: translateY(1px); }
-.btn-launch:disabled { opacity: .4; cursor: default; pointer-events: none; }
-
+.btn-launch:disabled { opacity: .4; pointer-events: none; }
 .btn-launch span { position: relative; z-index: 1; }
-.btn-launch .launch-icon { font-size: 20px; position: relative; z-index: 1; }
-
-/* No access state */
-.access-denied {
-  padding: 24px 32px;
-  border: 1.5px solid var(--border2);
-  background: var(--parch2);
-  max-width: 420px;
-  text-align: center;
-}
-
-.access-denied .lock { font-size: 32px; margin-bottom: 12px; display: block; }
-.access-denied .ad-title {
-  font-family: 'Cinzel', serif;
-  font-size: 15px;
-  color: var(--ink);
-  letter-spacing: .06em;
-  margin-bottom: 8px;
-}
-.access-denied p { font-style: italic; color: var(--ink3); font-size: 15px; }
 
 /* Game path row */
 .game-path-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: var(--parch2);
-  border: 1px solid var(--border);
-  max-width: 480px;
-  width: 100%;
-}
-
-.game-path-text {
-  flex: 1;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 11.5px;
-  color: var(--ink4);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.btn-browse {
-  padding: 5px 14px;
-  background: none;
-  border: 1px solid var(--border2);
-  color: var(--ink3);
-  font-family: 'Cinzel', serif;
-  font-size: 10px;
-  letter-spacing: .1em;
-  cursor: pointer;
-  transition: all .2s;
-  white-space: nowrap;
-}
-.btn-browse:hover { border-color: var(--gold2); color: var(--gold2); }
-
-/* Status message */
-.launch-status {
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  letter-spacing: .08em;
-  color: var(--ink4);
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 12px;
+  background: rgba(0,0,0,.3); backdrop-filter: blur(4px);
+  border: 1px solid rgba(139,105,20,.3);
+  max-width: 440px; width: 100%;
   margin-top: 10px;
-  min-height: 16px;
 }
-.launch-status.ok  { color: var(--teal2); }
-.launch-status.err { color: var(--blood); }
-
-/* ══ NEWS PAGE ══════════════════════════════════════════════ */
-#page-news { padding: 0; }
-
-.news-header {
-  padding: 24px 32px 18px;
-  border-bottom: 1px solid var(--border);
-  background: var(--parch2);
+.game-path-text {
+  flex: 1; font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px; color: rgba(245,234,212,.55);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-
-.news-title {
-  font-family: 'Cinzel', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: .1em;
-  margin-bottom: 2px;
+.btn-browse {
+  padding: 4px 12px; background: none;
+  border: 1px solid rgba(139,105,20,.4); color: rgba(245,234,212,.55);
+  font-family: 'Cinzel', serif; font-size: 9.5px; letter-spacing: .1em;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
 }
+.btn-browse:hover { border-color: var(--gold2); color: var(--gold3); }
 
-.news-sub {
-  font-style: italic;
-  color: var(--ink4);
-  font-size: 14px;
+.launch-status {
+  font-family: 'Cinzel', serif; font-size: 10.5px; letter-spacing: .08em;
+  color: rgba(245,234,212,.45); margin-top: 8px; min-height: 15px;
 }
+.launch-status.ok  { color: var(--teal3); }
+.launch-status.err { color: #e86060; }
 
-.news-list {
-  padding: 16px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.news-entry {
-  background: var(--parch2);
-  border: 1px solid var(--border);
-  padding: 16px 20px;
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: 16px;
-  transition: background .15s;
-}
-.news-entry:hover { background: var(--parch3); }
-
-.news-date {
-  font-family: 'Cinzel', serif;
-  font-size: 9.5px;
-  letter-spacing: .1em;
-  color: var(--ink4);
-  padding-top: 2px;
-  border-right: 1px solid var(--border);
-  padding-right: 12px;
-}
-
-.news-entry-title {
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-  color: var(--ink);
-  letter-spacing: .04em;
-  margin-bottom: 4px;
-}
-
-.news-body { color: var(--ink3); font-size: 14.5px; line-height: 1.6; }
-
-.news-tag {
-  display: inline-block;
-  margin-top: 7px; padding: 2px 9px;
-  border: 1px solid var(--border); 
-  font-family: 'Cinzel', serif;
-  font-size: 9px; letter-spacing: .14em; color: var(--ink4);
-}
-
-.news-empty {
-  padding: 40px;
+/* No access panel */
+.access-denied {
+  padding: 22px 28px; max-width: 400px;
+  border: 1.5px solid rgba(240,200,58,.25);
+  background: rgba(0,0,0,.3); backdrop-filter: blur(4px);
   text-align: center;
-  font-style: italic;
-  color: var(--ink4);
+}
+.access-denied .lock { font-size: 28px; margin-bottom: 10px; display: block; }
+.access-denied .ad-title {
+  font-family: 'Cinzel', serif; font-size: 14px;
+  color: rgba(245,234,212,.85); letter-spacing: .06em; margin-bottom: 7px;
+}
+.access-denied p { font-style: italic; color: rgba(245,234,212,.55); font-size: 15px; }
+
+@keyframes heroFade {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:none; }
 }
 
-/* Loading skeleton */
-.skel {
-  background: linear-gradient(90deg, var(--parch2) 25%, var(--parch3) 50%, var(--parch2) 75%);
-  background-size: 200% 100%;
-  animation: shim 1.4s infinite;
-  opacity: .6;
+/* ── UPDATE BANNER ──────────────────────────────────────────── */
+.update-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 9px 22px;
+  background: linear-gradient(90deg, rgba(10,7,3,.97), rgba(26,18,8,.97));
+  border-top: 1px solid rgba(139,105,20,.28);
+  flex-shrink: 0; position: relative; z-index: 10;
 }
-@keyframes shim { from { background-position:200% 0; } to { background-position:-200% 0; } }
+.update-pip-dot { width:7px; height:7px; border-radius:50%; background:var(--gold3); flex-shrink:0; animation:pipPulse 2s ease-in-out infinite; }
+.update-pip-dot.downloaded { background:var(--teal3); }
+.update-bar-text { flex:1; }
+.update-bar-title { font-family:'Cinzel',serif; font-size:10.5px; letter-spacing:.12em; color:var(--gold3); display:block; }
+.update-bar-sub   { font-family:'Cinzel',serif; font-size:9px; letter-spacing:.08em; color:rgba(139,105,20,.5); }
+.update-progress-wrap { display:flex; align-items:center; gap:8px; min-width:140px; }
+.update-progress-track { flex:1; height:3px; background:rgba(139,105,20,.2); }
+.update-progress-fill  { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold3)); transition:width .3s; }
+.update-progress-pct { font-family:'Cinzel',serif; font-size:9px; color:rgba(139,105,20,.6); white-space:nowrap; }
+.update-action-btn {
+  padding:5px 16px; background:none;
+  border:1px solid rgba(139,105,20,.4); color:var(--gold3);
+  font-family:'Cinzel',serif; font-size:10px; letter-spacing:.12em;
+  cursor:pointer; transition:all .2s; white-space:nowrap;
+}
+.update-action-btn:hover { background:rgba(139,105,20,.15); border-color:var(--gold3); }
+.update-dismiss-btn { background:none; border:none; color:rgba(139,105,20,.3); cursor:pointer; font-size:12px; padding:3px 6px; transition:color .2s; }
+.update-dismiss-btn:hover { color:rgba(139,105,20,.7); }
 
-/* ══ ROADMAP PAGE ═══════════════════════════════════════════ */
-#page-roadmap { padding: 0; }
+/* App version — bottom right */
+.app-version-bar {
+  padding: 4px 20px; text-align: right; background: rgba(0,0,0,.08);
+  border-top: 1px solid rgba(139,105,20,.08); flex-shrink: 0;
+}
+#app-version-label {
+  font-family:'Cinzel',serif; font-size:9px; letter-spacing:.14em;
+  color:rgba(139,105,20,.3);
+}
 
-.roadmap-header {
-  padding: 24px 32px 18px;
-  border-bottom: 1px solid var(--border);
+/* ═══════════════════════════════════════════════════════════════
+   NEWS PAGE — mirrors .updates-stack / .update-entry
+═══════════════════════════════════════════════════════════════ */
+#page-news { background: var(--parch); }
+
+.page-header {
+  padding: 22px 32px 16px;
   background: var(--parch2);
+  border-bottom: 1.5px solid var(--border2);
+  flex-shrink: 0;
+}
+.page-header-title {
+  font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700;
+  color: var(--ink); letter-spacing: .1em; margin-bottom: 1px;
+}
+.page-header-sub { font-style: italic; font-size: 14px; color: var(--ink4); }
+
+.updates-stack {
+  display: flex; flex-direction: column;
+  gap: 1px; background: var(--border);
+  border: 1.5px solid var(--border2);
+  margin: 16px 20px;
 }
 
-.roadmap-title {
-  font-family: 'Cinzel', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: .1em;
+.update-entry {
+  background: var(--parch2); padding: 20px 24px;
+  display: grid; grid-template-columns: 110px 1fr; gap: 20px;
+  transition: background .2s;
+}
+.update-entry:hover { background: var(--parch3); }
+
+.update-date {
+  font-family: 'Cinzel', serif; font-size: 10.5px;
+  letter-spacing: .1em; color: var(--ink4); padding-top: 3px;
+  border-right: 1px solid var(--border); padding-right: 16px;
 }
 
-.roadmap-body { padding: 20px 24px; }
-
-.overall-bar-label {
-  font-family: 'Cinzel', serif;
-  font-size: 9.5px;
-  letter-spacing: .18em;
-  color: var(--ink4);
-  margin-bottom: 6px;
-  display: flex;
-  justify-content: space-between;
+.update-title { font-family: 'Cinzel', serif; font-size: 16px; color: var(--ink); letter-spacing: .04em; margin-bottom: 5px; }
+.update-body  { color: var(--ink3); font-size: 15px; line-height: 1.65; }
+.update-tag {
+  display: inline-block; margin-top: 8px; padding: 2px 10px;
+  border: 1px solid var(--border); font-family: 'Cinzel', serif;
+  font-size: 9.5px; letter-spacing: .16em; color: var(--ink4);
 }
 
-.bar-track {
-  height: 5px;
-  background: var(--parch3);
-  border: 1px solid var(--border);
-  overflow: hidden;
-  margin-bottom: 24px;
-}
+/* ═══════════════════════════════════════════════════════════════
+   ROADMAP PAGE — mirrors .groups-grid
+═══════════════════════════════════════════════════════════════ */
+#page-roadmap { background: var(--parch); }
 
-.bar-fill {
+/* Overall progress — website style */
+.overall-progress-wrap { padding: 16px 20px 4px; }
+.overall-bar-row {
+  display: flex; justify-content: space-between;
+  font-family: 'Cinzel', serif; font-size: 9.5px;
+  letter-spacing: .16em; color: var(--ink4); margin-bottom: 6px;
+}
+.progress-track {
+  height: 4px; background: var(--parch3);
+  border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
+}
+.progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--gold), var(--gold4));
   transition: width 1.2s cubic-bezier(.4,0,.2,1);
 }
 
-.groups-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+/* Group cards — mirrors website groups-grid cards */
+.groups-list { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 2px; }
 
 .group-row {
   background: var(--parch2);
   border: 1px solid var(--border);
-  overflow: hidden;
+  overflow: hidden; transition: background .15s;
 }
 
 .group-row-head {
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: background .15s;
+  padding: 13px 16px;
+  display: flex; align-items: center; gap: 11px;
+  cursor: pointer; transition: background .15s;
 }
 .group-row-head:hover { background: var(--parch3); }
 
-.gr-icon { font-size: 18px; flex-shrink: 0; }
-.gr-name {
-  font-family: 'Cinzel', serif;
-  font-size: 13px;
-  color: var(--ink);
-  letter-spacing: .04em;
-  flex: 1;
-}
-.gr-pct {
-  font-family: 'Cinzel', serif;
-  font-size: 10px;
-  color: var(--ink4);
-  letter-spacing: .1em;
-}
-.gr-badge {
-  font-family: 'Cinzel', serif;
-  font-size: 8.5px;
-  letter-spacing: .1em;
-  padding: 2px 7px;
-  border: 1px solid;
-}
-.gr-badge.done   { border-color: var(--teal2); color: var(--teal2); }
-.gr-badge.active { border-color: var(--gold2); color: var(--gold2); }
+.gr-icon  { font-size: 16px; flex-shrink: 0; }
+.gr-name  { font-family:'Cinzel',serif; font-size:13px; color:var(--ink); letter-spacing:.04em; flex:1; }
+.gr-pct   { font-family:'Cinzel',serif; font-size:9.5px; color:var(--ink4); letter-spacing:.1em; }
+.gr-badge { font-family:'Cinzel',serif; font-size:8.5px; letter-spacing:.1em; padding:2px 7px; border:1px solid; }
+.gr-badge.done   { border-color:var(--teal2); color:var(--teal2); }
+.gr-badge.active { border-color:var(--gold2); color:var(--gold2); }
 
-.gr-mini-track {
-  height: 2px;
-  background: rgba(139,105,20,.12);
-}
-.gr-mini-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--gold), var(--gold3));
-  transition: width .7s ease;
-}
+.gr-mini-track { height: 2px; background: rgba(139,105,20,.1); }
+.gr-mini-fill  { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold3)); transition:width .7s ease; }
 
-.gr-tasks {
-  display: none;
-  border-top: 1px solid var(--border);
-}
-.gr-tasks.open { display: block; }
+.gr-tasks { display:none; border-top:1px solid var(--border); }
+.gr-tasks.open { display:block; }
 
 .gr-task-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 16px 8px 44px;
-  font-size: 14px;
-  border-bottom: 1px dotted rgba(139,105,20,.08);
-  color: var(--ink2);
+  display:flex; align-items:center; gap:10px;
+  padding:8px 16px 8px 42px; font-size:14px;
+  border-bottom:1px dotted rgba(139,105,20,.07); color:var(--ink2);
 }
-.gr-task-item:last-child { border-bottom: none; }
-.gr-task-item.done { color: var(--teal); }
-.gr-task-item.wip  { color: var(--gold2); }
-.task-rune { font-size: 10px; width: 12px; flex-shrink: 0; text-align: center; }
+.gr-task-item:last-child { border-bottom:none; }
+.gr-task-item.done { color:var(--teal); }
+.gr-task-item.wip  { color:var(--gold2); }
+.task-rune { font-size:10px; width:12px; flex-shrink:0; text-align:center; }
 
-/* ══ TOAST ══════════════════════════════════════════════════ */
+/* ── EMPTY / SKELETON ───────────────────────────────────────── */
+.empty-scroll {
+  padding:28px; text-align:center; font-style:italic;
+  color:var(--ink4); border:1px dashed var(--border);
+  margin: 16px 20px;
+}
+.skel {
+  background:linear-gradient(90deg,var(--parch2) 25%,var(--parch3) 50%,var(--parch2) 75%);
+  background-size:200% 100%; animation:shim 1.4s infinite; opacity:.6;
+}
+@keyframes shim { from{background-position:200% 0} to{background-position:-200% 0} }
+
+/* ── TOAST ──────────────────────────────────────────────────── */
 .toast-container {
-  position: fixed;
-  bottom: 20px; right: 20px;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  pointer-events: none;
+  position:fixed; bottom:16px; right:16px; z-index:9999;
+  display:flex; flex-direction:column; gap:6px; pointer-events:none;
 }
-
 .toast {
-  background: var(--ink2);
-  border: 1px solid rgba(139,105,20,.4);
-  padding: 10px 18px;
-  font-family: 'Cinzel', serif;
-  font-size: 11.5px;
-  color: var(--gold3);
-  letter-spacing: .07em;
-  box-shadow: 0 4px 16px var(--shadow2);
-  opacity: 0;
-  transform: translateX(12px);
-  transition: opacity .3s, transform .3s;
+  background:var(--ink2);
+  border:1px solid rgba(139,105,20,.38);
+  padding:9px 18px;
+  font-family:'Cinzel',serif; font-size:11px; color:var(--gold3); letter-spacing:.06em;
+  box-shadow:0 4px 16px var(--shadow2);
+  opacity:0; transform:translateX(10px); transition:opacity .3s,transform .3s;
 }
-.toast.show { opacity: 1; transform: none; }
-.toast.err  { color: #e86060; border-color: rgba(200,50,50,.4); }
+.toast.show { opacity:1; transform:none; }
+.toast.err  { color:#e86060; border-color:rgba(200,50,50,.35); }
 
-/* ══ INSTALL / UPDATE PANEL ═════════════════════════════════ */
-#page-install { padding: 0; }
-
-.install-header {
-  padding: 24px 32px 18px;
-  border-bottom: 1px solid var(--border);
-  background: var(--parch2);
-}
-
-.install-title {
-  font-family: 'Cinzel', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: .1em;
-  margin-bottom: 2px;
-}
-
-.install-sub {
-  font-style: italic;
-  color: var(--ink4);
-  font-size: 14px;
-}
-
-.install-body {
-  padding: 24px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-width: 640px;
-}
-
-/* Version card */
-.version-card {
-  background: var(--parch2);
-  border: 1px solid var(--border);
-  padding: 18px 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.ver-block-label {
-  font-family: 'Cinzel', serif;
-  font-size: 9px;
-  letter-spacing: .2em;
-  color: var(--ink4);
-  margin-bottom: 4px;
-}
-
-.ver-block-value {
-  font-family: 'Cinzel', serif;
-  font-size: 15px;
-  color: var(--ink);
-  letter-spacing: .06em;
-}
-
-.ver-block-value.up-to-date { color: var(--teal2); }
-.ver-block-value.outdated   { color: var(--gold2); }
-.ver-block-value.not-installed { color: var(--ink4); font-style: italic; }
-
-/* Action row */
-.install-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.btn-install {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 13px 28px;
-  background: linear-gradient(135deg, var(--ink) 0%, var(--ink2) 100%);
-  border: 1.5px solid var(--gold2);
-  color: var(--parch);
-  font-family: 'Cinzel', serif;
-  font-size: 12px;
-  letter-spacing: .14em;
-  cursor: pointer;
-  transition: all .2s;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-install::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
-  opacity: 0;
-  transition: opacity .2s;
-}
-.btn-install:hover::before { opacity: 1; }
-.btn-install span { position: relative; z-index: 1; }
-.btn-install:disabled { opacity: .4; cursor: default; pointer-events: none; }
-
-.btn-uninstall {
-  padding: 13px 20px;
-  background: none;
-  border: 1.5px solid rgba(122,28,28,.35);
-  color: var(--blood);
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  letter-spacing: .1em;
-  cursor: pointer;
-  transition: all .2s;
-}
-.btn-uninstall:hover { border-color: var(--blood); background: rgba(122,28,28,.07); }
-.btn-uninstall:disabled { opacity: .35; cursor: default; pointer-events: none; }
-
-/* Progress section */
-.install-progress-wrap {
-  display: none;
-}
-.install-progress-wrap.visible { display: block; }
-
-.prog-status-text {
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  letter-spacing: .1em;
-  color: var(--ink3);
-  margin-bottom: 8px;
-}
-
-.prog-track {
-  height: 6px;
-  background: var(--parch3);
-  border: 1px solid var(--border);
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.prog-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--gold), var(--gold4));
-  width: 0%;
-  transition: width .3s ease;
-}
-
-.prog-bytes {
-  font-family: 'Cinzel', serif;
-  font-size: 9.5px;
-  letter-spacing: .06em;
-  color: var(--ink4);
-}
-
-/* Install directory row */
-.install-dir-row {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  border: 1px solid var(--border);
-  background: var(--parch2);
-}
-
-.install-dir-label {
-  font-family: 'Cinzel', serif;
-  font-size: 9px;
-  letter-spacing: .18em;
-  color: var(--ink4);
-  padding: 8px 12px;
-  border-right: 1px solid var(--border);
-  white-space: nowrap;
-  background: var(--parch3);
-}
-
-.install-dir-path {
-  flex: 1;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 11px;
-  color: var(--ink3);
-  padding: 8px 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Release notes */
-.release-notes {
-  border: 1px solid var(--border);
-  background: var(--parch2);
-}
-
-.release-notes-head {
-  padding: 9px 14px;
-  border-bottom: 1px solid var(--border);
-  font-family: 'Cinzel', serif;
-  font-size: 10px;
-  letter-spacing: .16em;
-  color: var(--ink4);
-  background: var(--parch3);
-}
-
-.release-notes-body {
-  padding: 14px 16px;
-  font-size: 14px;
-  color: var(--ink3);
-  line-height: 1.7;
-  max-height: 180px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-}
-
-.install-msg {
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  letter-spacing: .07em;
-  color: var(--ink4);
-  min-height: 16px;
-}
-.install-msg.ok  { color: var(--teal2); }
-.install-msg.err { color: var(--blood); }
-
-/* ══ SCROLLBAR ══════════════════════════════════════════════ */
-::-webkit-scrollbar { width: 5px; }
+/* ── SCROLLBAR ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--parch2); }
 ::-webkit-scrollbar-thumb { background: var(--border2); }
 </style>
 </head>
 <body>
 
-<!-- Titlebar -->
+<!-- ── TITLEBAR ─────────────────────────────────────────────── -->
 <div class="titlebar">
   <div class="titlebar-logo">
     <span class="mark">⚒</span>
@@ -1035,32 +725,24 @@ body::after {
   </div>
   <div class="titlebar-controls">
     <button class="wc-btn wc-min" onclick="window.electron.minimize()" title="Minimize">
-      <svg width="10" height="2" viewBox="0 0 10 2" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="10" height="2" fill="currentColor"/>
-      </svg>
+      <svg width="10" height="2" viewBox="0 0 10 2" fill="none"><rect width="10" height="2" fill="currentColor"/></svg>
     </button>
     <button class="wc-btn wc-max" onclick="window.electron.maximize()" title="Maximise">
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" stroke-width="1.2" fill="none"/>
-      </svg>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x=".6" y=".6" width="8.8" height="8.8" stroke="currentColor" stroke-width="1.2"/></svg>
     </button>
     <button class="wc-btn wc-close" onclick="window.electron.close()" title="Close">
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line x1="0.7" y1="0.7" x2="9.3" y2="9.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
-        <line x1="9.3" y1="0.7" x2="0.7" y2="9.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
-      </svg>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1=".7" y1=".7" x2="9.3" y2="9.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/><line x1="9.3" y1=".7" x2=".7" y2="9.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/></svg>
     </button>
   </div>
 </div>
 
-<!-- App body -->
+<!-- ── APP BODY ─────────────────────────────────────────────── -->
 <div class="app-layout">
 
-  <!-- Sidebar (shown when signed in) -->
+  <!-- Sidebar (hidden until signed in) -->
   <div class="sidebar" id="sidebar" style="display:none">
     <div class="sidebar-hero">
-      <span class="sb-emblem">⚒</span>
-      <div class="sb-title">Project<br>Ironveil</div>
+      <img class="sb-logo-img" src="../../assets/ironveiltitle.png" alt="Ironveil">
       <div class="sb-sub">VR Crafting RPG</div>
     </div>
 
@@ -1069,17 +751,14 @@ body::after {
         <span class="nav-icon">▶</span> Play
       </button>
       <button class="nav-item" id="nav-news" onclick="showPage('news',this)">
-        <span class="nav-icon">⊞</span> Dev Scrolls
+        <span class="nav-icon">⊞</span> Scrolls
       </button>
       <button class="nav-item" id="nav-roadmap" onclick="showPage('roadmap',this)">
         <span class="nav-icon">⚔</span> Codex
       </button>
-      <button class="nav-item" id="nav-install" onclick="showPage('install',this)">
-        <span class="nav-icon">⬇</span> Install
-      </button>
     </nav>
 
-    <div class="sidebar-user" id="sidebar-user">
+    <div class="sidebar-user">
       <div class="user-row">
         <div class="user-avatar" id="user-initial">?</div>
         <div>
@@ -1091,16 +770,19 @@ body::after {
     </div>
   </div>
 
-  <!-- Main -->
+  <!-- Main content -->
   <div class="main">
 
-    <!-- ── AUTH ── -->
+    <!-- ══ AUTH ══ -->
     <div class="page active" id="page-auth" style="display:flex">
+      <div class="auth-logo-wrap">
+        <img class="auth-title-img" src="../../assets/ironveiltitle.png" alt="Ironveil">
+      </div>
+      <div class="auth-eyebrow">OPEN DEVELOPMENT · VR CRAFTING RPG</div>
       <div class="auth-card">
         <div class="auth-head">
-          <span class="auth-emblem">⚒</span>
-          <div class="auth-title">Ironveil</div>
-          <div class="auth-subtitle">ENTER THE FORGE</div>
+          <div class="auth-head-title">Enter the Forge</div>
+          <div class="auth-head-sub">Sign in to access your guild</div>
         </div>
         <div class="auth-body">
           <div class="auth-tabs">
@@ -1113,10 +795,9 @@ body::after {
               <input type="email" id="in-email" placeholder="your@email.com">
             </div>
             <div class="field"><label>Password</label>
-              <input type="password" id="in-pass" placeholder="••••••••"
-                onkeydown="if(event.key==='Enter')doSignIn()">
+              <input type="password" id="in-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSignIn()">
             </div>
-            <button class="auth-btn" id="signin-btn" onclick="doSignIn()">Enter the Forge</button>
+            <button class="auth-btn" id="signin-btn" onclick="doSignIn()">⬡ Enter the Forge</button>
           </div>
 
           <div id="form-up" style="display:none">
@@ -1127,10 +808,9 @@ body::after {
               <input type="email" id="up-email" placeholder="your@email.com">
             </div>
             <div class="field"><label>Password</label>
-              <input type="password" id="up-pass" placeholder="Min. 6 characters"
-                onkeydown="if(event.key==='Enter')doSignUp()">
+              <input type="password" id="up-pass" placeholder="Min. 6 characters" onkeydown="if(event.key==='Enter')doSignUp()">
             </div>
-            <button class="auth-btn" onclick="doSignUp()">Pledge Your Name</button>
+            <button class="auth-btn" onclick="doSignUp()">⬡ Pledge Your Name</button>
           </div>
 
           <div class="auth-msg" id="auth-msg"></div>
@@ -1138,26 +818,31 @@ body::after {
       </div>
     </div>
 
-    <!-- ── PLAY ── -->
+    <!-- ══ PLAY ══ -->
     <div class="page" id="page-play">
-      <div class="play-hero">
-        <div class="play-ornament">✦ ✦ ✦</div>
-        <div class="play-eyebrow">Open Development · VR Crafting RPG</div>
-        <h1 class="play-title">Project Ironveil</h1>
+      <div class="play-bg"></div>
+      <div class="play-vignette"></div>
+      <div class="play-content">
+        <div class="play-eyebrow">Open Development · VR Crafting RPG · Built in Public</div>
+        <img class="play-logo-img" src="../../assets/ironveiltitle.png" alt="Ironveil">
         <p class="play-tagline">Forge Your Legend in Iron and Fire</p>
 
-        <!-- Playtest status -->
-        <div class="pt-banner">
+        <div class="play-stats">
+          <div class="play-stat"><div class="ps-val" id="stat-done">—</div><div class="ps-key">Completed</div></div>
+          <div class="play-stat"><div class="ps-val" id="stat-wip">—</div><div class="ps-key">In Progress</div></div>
+          <div class="play-stat"><div class="ps-val" id="stat-pct">—</div><div class="ps-key">Overall</div></div>
+        </div>
+
+        <div class="pt-badge">
           <div class="pt-pip" id="pt-pip"></div>
           <span id="pt-text">Checking status…</span>
         </div>
 
-        <!-- Launch (if access) -->
+        <!-- Has access -->
         <div id="launch-section" style="display:none">
-          <div class="launch-area">
+          <div class="play-cta">
             <button class="btn-launch" id="launch-btn" onclick="launchGame()">
-              <span class="launch-icon">▶</span>
-              <span>LAUNCH IRONVEIL</span>
+              <span>▶</span><span>LAUNCH IRONVEIL</span>
             </button>
           </div>
           <div class="game-path-row">
@@ -1172,143 +857,89 @@ body::after {
           <div class="access-denied">
             <span class="lock">🔒</span>
             <div class="ad-title">Access Not Yet Granted</div>
-            <p>Your account is registered, but the forge gates have not opened for you yet.
-              A developer will grant you access when a playtest spot becomes available.</p>
+            <p>Your account is registered. A developer will open the gates when a slot becomes available.</p>
           </div>
         </div>
-
       </div>
+
+      <!-- Update bar -->
+      <div id="update-bar" style="display:none" class="update-bar">
+        <div class="update-pip-dot" id="update-pip-dot"></div>
+        <div class="update-bar-text">
+          <span class="update-bar-title" id="update-bar-title">Update available</span>
+          <span class="update-bar-sub" id="update-bar-sub">A new version is ready</span>
+        </div>
+        <div class="update-progress-wrap" id="update-progress-wrap" style="display:none">
+          <div class="update-progress-track"><div class="update-progress-fill" id="update-progress-fill" style="width:0%"></div></div>
+          <span class="update-progress-pct" id="update-progress-pct">0%</span>
+        </div>
+        <button class="update-action-btn" id="update-action-btn" onclick="handleUpdateAction()">Download</button>
+        <button class="update-dismiss-btn" onclick="document.getElementById('update-bar').style.display='none'" title="Dismiss">✕</button>
+      </div>
+      <div class="app-version-bar"><span id="app-version-label">v—</span></div>
     </div>
 
-    <!-- ── NEWS ── -->
+    <!-- ══ NEWS / SCROLLS ══ -->
     <div class="page" id="page-news">
-      <div class="news-header">
-        <div class="news-title">Development Scrolls</div>
-        <div class="news-sub">Chronicles from the forge</div>
+      <div class="page-header">
+        <div class="page-header-title">Development Scrolls</div>
+        <div class="page-header-sub">Chronicles from the forge</div>
       </div>
-      <div class="news-list" id="news-list">
-        <div class="skel" style="height:72px;margin-bottom:4px"></div>
-        <div class="skel" style="height:72px;margin-bottom:4px"></div>
-        <div class="skel" style="height:72px"></div>
+      <div class="updates-stack" id="news-list">
+        <div class="update-entry"><div class="skel" style="height:14px;width:80px"></div><div><div class="skel" style="height:18px;width:45%;margin-bottom:8px"></div><div class="skel" style="height:12px;width:75%"></div></div></div>
+        <div class="update-entry"><div class="skel" style="height:14px;width:80px"></div><div><div class="skel" style="height:18px;width:55%;margin-bottom:8px"></div><div class="skel" style="height:12px;width:60%"></div></div></div>
       </div>
     </div>
 
-    <!-- ── ROADMAP ── -->
+    <!-- ══ CODEX / ROADMAP ══ -->
     <div class="page" id="page-roadmap">
-      <div class="roadmap-header">
-        <div class="roadmap-title">Codex of Progress</div>
+      <div class="page-header">
+        <div class="page-header-title">Codex of Progress</div>
+        <div class="page-header-sub">The forge's chronicle</div>
       </div>
-      <div class="roadmap-body">
-        <div class="overall-bar-label">
+      <div class="overall-progress-wrap">
+        <div class="overall-bar-row">
           <span>OVERALL COMPLETION</span>
           <span id="rm-pct-label">—</span>
         </div>
-        <div class="bar-track">
-          <div class="bar-fill" id="rm-bar" style="width:0%"></div>
-        </div>
-        <div class="groups-list" id="rm-groups">
-          <div class="skel" style="height:46px;margin-bottom:4px"></div>
-          <div class="skel" style="height:46px;margin-bottom:4px"></div>
-          <div class="skel" style="height:46px"></div>
+        <div class="progress-track">
+          <div class="progress-fill" id="rm-bar" style="width:0%"></div>
         </div>
       </div>
-    </div>
-
-    <!-- ── INSTALL / UPDATE ── -->
-    <div class="page" id="page-install">
-      <div class="install-header">
-        <div class="install-title">Forge Installation</div>
-        <div class="install-sub" id="install-sub">Checking for updates…</div>
-      </div>
-      <div class="install-body">
-
-        <!-- Version card -->
-        <div class="version-card">
-          <div>
-            <div class="ver-block-label">INSTALLED VERSION</div>
-            <div class="ver-block-value not-installed" id="installed-ver-text">—</div>
-          </div>
-          <div>
-            <div class="ver-block-label">LATEST RELEASE</div>
-            <div class="ver-block-value" id="latest-ver-text">—</div>
-          </div>
-        </div>
-
-        <!-- Install directory -->
-        <div class="install-dir-row">
-          <span class="install-dir-label">INSTALL DIR</span>
-          <span class="install-dir-path" id="install-dir-text">—</span>
-        </div>
-
-        <!-- Action buttons -->
-        <div class="install-actions">
-          <button class="btn-install" id="btn-do-install" onclick="doInstall()" disabled>
-            <span id="install-btn-icon">⬇</span>
-            <span id="install-btn-label">CHECK FOR RELEASES</span>
-          </button>
-          <button class="btn-uninstall" id="btn-uninstall" onclick="doUninstall()" style="display:none">
-            Uninstall
-          </button>
-        </div>
-
-        <!-- Progress -->
-        <div class="install-progress-wrap" id="install-progress-wrap">
-          <div class="prog-status-text" id="prog-status-text">Preparing…</div>
-          <div class="prog-track">
-            <div class="prog-fill" id="prog-fill"></div>
-          </div>
-          <div class="prog-bytes" id="prog-bytes"></div>
-        </div>
-
-        <div class="install-msg" id="install-msg"></div>
-
-        <!-- Latest release notes -->
-        <div class="release-notes" id="release-notes-block" style="display:none">
-          <div class="release-notes-head">RELEASE NOTES</div>
-          <div class="release-notes-body" id="release-notes-body"></div>
-        </div>
-
+      <div class="groups-list" id="rm-groups">
+        <div class="group-row"><div class="skel" style="height:44px"></div></div>
+        <div class="group-row"><div class="skel" style="height:44px"></div></div>
+        <div class="group-row"><div class="skel" style="height:44px"></div></div>
       </div>
     </div>
 
   </div><!-- /main -->
 </div><!-- /app-layout -->
 
-<!-- Toast container -->
 <div class="toast-container" id="toasts"></div>
 
 <script>
-// ══ CONFIG ════════════════════════════════════════════════════
+// ══ CONFIG ═══════════════════════════════════════════════════
 const SUPABASE_URL = 'https://tzehikqnnzaykyaomzer.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWhpa3FubnpheWt5YW9temVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3OTMxMzMsImV4cCI6MjA5NjM2OTEzM30.Trm5ha1xSr5MvQ-s3AKDdcBncdVCH_xi3CjhVfQaLfo';
+const HAS_ACCESS_ROLES = ['developer','admin','tester'];
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }
 });
 
-// ══ STATE ══════════════════════════════════════════════════════
-let currentUser    = null;
-let currentProfile = null;
-let groupsCache    = [];
-let tasksCache     = [];
-let gamePath       = null;
+// ══ STATE ════════════════════════════════════════════════════
+let currentUser = null, currentProfile = null, gamePath = null;
+let groupsCache = [], tasksCache = [];
+let updateState = 'idle';
 
-const HAS_ACCESS_ROLES = ['developer', 'admin'];
-
-// ══ AUTH ═══════════════════════════════════════════════════════
+// ══ AUTH ══════════════════════════════════════════════════════
 async function initAuth() {
-  // Try restoring persisted session
-  const storedSession = await window.electron.storeGet('supabase_session');
-  if (storedSession) {
-    try {
-      await sb.auth.setSession(storedSession);
-    } catch {}
-  }
+  const stored = await window.electron.storeGet('supabase_session').catch(() => null);
+  if (stored) { try { await sb.auth.setSession(stored); } catch {} }
 
   const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) {
-    await handleSignedIn(session);
-  }
+  if (session?.user) await handleSignedIn(session);
 
   sb.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN') {
@@ -1328,7 +959,6 @@ async function handleSignedIn(session) {
   const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
   currentProfile = data;
 
-  // Update sidebar UI
   const name = currentProfile?.display_name || currentUser.email.split('@')[0];
   const role = currentProfile?.role || 'user';
   document.getElementById('user-initial').textContent = name.slice(0,1).toUpperCase();
@@ -1336,29 +966,28 @@ async function handleSignedIn(session) {
   document.getElementById('user-role-text').textContent = role.toUpperCase();
 
   document.getElementById('sidebar').style.display = 'flex';
-  showPage('play', document.getElementById('nav-play'));
   document.getElementById('page-auth').style.display = 'none';
+  showPage('play', document.getElementById('nav-play'));
 
   await loadAll();
 }
 
 function handleSignedOut() {
-  currentUser = null;
-  currentProfile = null;
+  currentUser = null; currentProfile = null;
   document.getElementById('sidebar').style.display = 'none';
-  showPage('auth', null);
+  document.querySelectorAll('.page').forEach(p => { if(p.id!=='page-auth') p.classList.remove('active'); });
   document.getElementById('page-auth').style.display = 'flex';
+  document.getElementById('page-auth').classList.add('active');
 }
 
 async function doSignIn() {
   const email = document.getElementById('in-email').value.trim();
   const pass  = document.getElementById('in-pass').value;
   setAuthMsg('');
-  document.getElementById('signin-btn').disabled = true;
-  document.getElementById('signin-btn').textContent = 'Entering…';
+  const btn = document.getElementById('signin-btn');
+  btn.disabled = true; btn.textContent = 'Entering…';
   const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  document.getElementById('signin-btn').disabled = false;
-  document.getElementById('signin-btn').textContent = 'Enter the Forge';
+  btn.disabled = false; btn.textContent = '⬡ Enter the Forge';
   if (error) setAuthMsg(error.message);
 }
 
@@ -1368,55 +997,38 @@ async function doSignUp() {
   const pass  = document.getElementById('up-pass').value;
   setAuthMsg('');
   if (!name) { setAuthMsg('Display name required.'); return; }
-  const { error } = await sb.auth.signUp({
-    email, password: pass,
-    options: { data: { display_name: name } }
-  });
+  const { error } = await sb.auth.signUp({ email, password:pass, options:{ data:{ display_name:name } } });
   if (error) { setAuthMsg(error.message); return; }
   document.getElementById('auth-msg').style.color = 'var(--teal2)';
   setAuthMsg('Account forged! Check your email to confirm, then sign in.');
 }
 
-async function signOut() {
-  await sb.auth.signOut();
-}
+async function signOut() { await sb.auth.signOut(); }
 
 function switchTab(t) {
-  document.getElementById('form-in').style.display = t === 'in' ? '' : 'none';
-  document.getElementById('form-up').style.display = t === 'up' ? '' : 'none';
-  document.getElementById('tab-in').classList.toggle('active', t === 'in');
-  document.getElementById('tab-up').classList.toggle('active', t === 'up');
+  document.getElementById('form-in').style.display = t==='in' ? '' : 'none';
+  document.getElementById('form-up').style.display = t==='up' ? '' : 'none';
+  document.getElementById('tab-in').classList.toggle('active', t==='in');
+  document.getElementById('tab-up').classList.toggle('active', t==='up');
   setAuthMsg('');
   document.getElementById('auth-msg').style.color = 'var(--blood)';
 }
+function setAuthMsg(msg) { document.getElementById('auth-msg').textContent = msg; }
 
-function setAuthMsg(msg) {
-  document.getElementById('auth-msg').textContent = msg;
-}
-
-// ══ NAVIGATION ════════════════════════════════════════════════
+// ══ NAVIGATION ═══════════════════════════════════════════════
 function showPage(id, btn) {
-  document.querySelectorAll('.page').forEach(p => {
-    if (p.id === 'page-auth') return; // don't hide auth via nav
-    p.classList.remove('active');
-  });
+  document.querySelectorAll('.page').forEach(p => { if(p.id!=='page-auth') p.classList.remove('active'); });
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const pg = document.getElementById('page-' + id);
-  if (pg) { pg.classList.add('active'); }
+  if (pg) pg.classList.add('active');
   if (btn) btn.classList.add('active');
 }
 
 // ══ DATA ══════════════════════════════════════════════════════
 async function loadAll() {
-  await Promise.all([
-    loadPlaytest(),
-    loadNews(),
-    loadRoadmap(),
-    detectGame(),
-  ]);
+  await Promise.all([loadPlaytest(), loadNews(), loadRoadmap(), detectGame()]);
 }
 
-// ── Playtest status ──────────────────────────────────────────
 async function loadPlaytest() {
   const { data } = await sb.from('playtest_status').select('*').maybeSingle();
   const pip  = document.getElementById('pt-pip');
@@ -1424,116 +1036,96 @@ async function loadPlaytest() {
   if (!data) { text.textContent = 'Playtest info unavailable'; return; }
   if (data.status === 'open') {
     pip.className = 'pt-pip open';
-    text.textContent = `Playtest Open${data.platform ? ' — ' + data.platform : ''}`;
+    text.textContent = `Playtest Open${data.platform ? ' — '+data.platform : ''}`;
   } else if (data.status === 'soon') {
     pip.className = 'pt-pip soon';
-    text.textContent = `Playtest Coming Soon${data.eta ? ' · ' + data.eta : ''}`;
+    text.textContent = `Playtest Coming Soon${data.eta ? ' · '+data.eta : ''}`;
   } else {
     pip.className = 'pt-pip';
     text.textContent = data.notes || 'Closed Alpha — Not Yet Accepting Players';
   }
-
-  // Show appropriate section based on role
   const role = currentProfile?.role || 'user';
   const hasAccess = HAS_ACCESS_ROLES.includes(role);
   document.getElementById('launch-section').style.display    = hasAccess ? '' : 'none';
   document.getElementById('no-access-section').style.display = hasAccess ? 'none' : '';
 }
 
-// ── News / updates ───────────────────────────────────────────
 async function loadNews() {
   const { data } = await sb.from('public_updates')
     .select('*, profiles(display_name)')
-    .order('pinned', { ascending: false })
-    .order('created_at', { ascending: false })
+    .order('pinned', { ascending:false })
+    .order('created_at', { ascending:false })
     .limit(30);
-
   const list = document.getElementById('news-list');
   list.innerHTML = '';
-  if (!data?.length) {
-    list.innerHTML = '<div class="news-empty">The scrolls are silent — no chronicles yet.</div>';
-    return;
-  }
+  if (!data?.length) { list.innerHTML = '<div class="empty-scroll">The scrolls are silent — no chronicles yet.</div>'; return; }
   data.forEach(u => {
-    const date = new Date(u.created_at).toLocaleDateString('en-US',
-      { year:'numeric', month:'short', day:'numeric' });
+    const date = new Date(u.created_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
     const el = document.createElement('div');
-    el.className = 'news-entry';
+    el.className = 'update-entry';
     el.innerHTML = `
-      <div class="news-date">${u.pinned ? '📌 ' : ''}${date}</div>
+      <div class="update-date">${u.pinned?'📌 ':''}${date}</div>
       <div>
-        <div class="news-entry-title">${u.title}</div>
-        <div class="news-body">${u.body}</div>
-        ${u.tag ? `<span class="news-tag">${u.tag}</span>` : ''}
-        ${u.profiles?.display_name
-          ? `<div style="font-family:'Cinzel',serif;font-size:9px;color:var(--ink4);margin-top:5px;letter-spacing:.06em">— ${u.profiles.display_name}</div>`
-          : ''}
-      </div>
-    `;
+        <div class="update-title">${u.title}</div>
+        <div class="update-body">${u.body}</div>
+        ${u.tag?`<span class="update-tag">${u.tag}</span>`:''}
+        ${u.profiles?.display_name?`<div style="font-family:'Cinzel',serif;font-size:10px;color:var(--ink4);margin-top:6px;letter-spacing:.06em">— ${u.profiles.display_name}</div>`:''}
+      </div>`;
     list.appendChild(el);
   });
 }
 
-// ── Roadmap ──────────────────────────────────────────────────
 async function loadRoadmap() {
-  const [{ data: groups }, { data: tasks }] = await Promise.all([
+  const [{ data:groups }, { data:tasks }] = await Promise.all([
     sb.from('task_groups').select('*').order('sort_order'),
     sb.from('tasks').select('*').order('sort_order'),
   ]);
-  groupsCache = groups || [];
-  tasksCache  = tasks  || [];
+  groupsCache = groups || []; tasksCache = tasks || [];
   renderRoadmap();
+  // Update hero stats to match website
+  const done = tasksCache.filter(t=>t.state==='done').length;
+  const wip  = tasksCache.filter(t=>t.state==='in-progress').length;
+  const pct  = tasksCache.length ? Math.round((done/tasksCache.length)*100)+'%' : '—';
+  document.getElementById('stat-done').textContent = done || '—';
+  document.getElementById('stat-wip').textContent  = wip  || '—';
+  document.getElementById('stat-pct').textContent  = pct;
 }
 
 function renderRoadmap() {
   const total = tasksCache.length;
-  const done  = tasksCache.filter(t => t.state === 'done').length;
-  const pct   = total ? Math.round((done / total) * 100) : 0;
-
+  const done  = tasksCache.filter(t=>t.state==='done').length;
+  const pct   = total ? Math.round((done/total)*100) : 0;
   document.getElementById('rm-pct-label').textContent = `${done} / ${total} · ${pct}%`;
-  document.getElementById('rm-bar').style.width = pct + '%';
-
+  document.getElementById('rm-bar').style.width = pct+'%';
   const list = document.getElementById('rm-groups');
   list.innerHTML = '';
-
   groupsCache.forEach(g => {
-    const tasks = tasksCache.filter(t => t.group_id === g.id);
-    const gdone = tasks.filter(t => t.state === 'done').length;
-    const gwip  = tasks.filter(t => t.state === 'in-progress').length;
-    const gpct  = tasks.length ? Math.round((gdone / tasks.length) * 100) : 0;
-    const allDone = tasks.length > 0 && gdone === tasks.length;
-    const isActive = gwip > 0;
-
-    const row = document.createElement('div');
-    row.className = 'group-row';
-
+    const tasks = tasksCache.filter(t=>t.group_id===g.id);
+    const gdone = tasks.filter(t=>t.state==='done').length;
+    const gwip  = tasks.filter(t=>t.state==='in-progress').length;
+    const gpct  = tasks.length ? Math.round((gdone/tasks.length)*100) : 0;
+    const allDone = tasks.length>0 && gdone===tasks.length;
+    const rune  = { done:'✓','in-progress':'◐',todo:'○' };
     const badge = allDone
       ? '<span class="gr-badge done">COMPLETE</span>'
-      : isActive ? '<span class="gr-badge active">ACTIVE</span>' : '';
-
-    const rune = { done: '✓', 'in-progress': '◐', todo: '○' };
-
+      : gwip>0 ? '<span class="gr-badge active">ACTIVE</span>' : '';
+    const row = document.createElement('div');
+    row.className = 'group-row';
     row.innerHTML = `
       <div class="group-row-head" onclick="toggleGroup(this)">
-        <span class="gr-icon">${g.icon || '⚔'}</span>
+        <span class="gr-icon">${g.icon||'⚔'}</span>
         <span class="gr-name">${g.name}</span>
         ${badge}
         <span class="gr-pct">${gdone}/${tasks.length} · ${gpct}%</span>
-        <span style="font-size:11px;color:var(--ink4);margin-left:4px">▸</span>
+        <span style="font-size:10px;color:var(--ink4);margin-left:4px">▸</span>
       </div>
-      <div class="gr-mini-track">
-        <div class="gr-mini-fill" style="width:${gpct}%"></div>
-      </div>
+      <div class="gr-mini-track"><div class="gr-mini-fill" style="width:${gpct}%"></div></div>
       <div class="gr-tasks">
-        ${tasks.map(t => {
-          const cls = t.state === 'done' ? 'done' : t.state === 'in-progress' ? 'wip' : '';
-          return `<div class="gr-task-item ${cls}">
-            <span class="task-rune">${rune[t.state] || '○'}</span>
-            ${t.name}
-          </div>`;
+        ${tasks.map(t=>{
+          const cls=t.state==='done'?'done':t.state==='in-progress'?'wip':'';
+          return `<div class="gr-task-item ${cls}"><span class="task-rune">${rune[t.state]||'○'}</span>${t.name}</div>`;
         }).join('')}
-      </div>
-    `;
+      </div>`;
     list.appendChild(row);
   });
 }
@@ -1541,357 +1133,131 @@ function renderRoadmap() {
 function toggleGroup(head) {
   const tasks = head.parentElement.querySelector('.gr-tasks');
   const arrow = head.querySelector('span:last-child');
-  const isOpen = tasks.classList.toggle('open');
-  arrow.textContent = isOpen ? '▾' : '▸';
+  const open  = tasks.classList.toggle('open');
+  arrow.textContent = open ? '▾' : '▸';
 }
 
-// ══ GAME LAUNCH ═══════════════════════════════════════════════
+// ══ GAME LAUNCH ══════════════════════════════════════════════
 async function detectGame() {
-  // Check stored path first
-  const stored = await window.electron.storeGet('game_path');
+  const stored = await window.electron.storeGet('game_path').catch(()=>null);
   const result = await window.electron.detectGame(stored);
-  if (result.found) {
-    gamePath = result.path;
-    setGamePath(gamePath, true);
-  } else {
-    gamePath = null;
-    setGamePath(null, false);
-  }
+  if (result.found) { gamePath=result.path; setGamePath(gamePath,true); }
+  else              { gamePath=null;         setGamePath(null,false); }
 }
-
 function setGamePath(p, found) {
-  const el = document.getElementById('game-path-text');
-  const btn = document.getElementById('launch-btn');
+  const el     = document.getElementById('game-path-text');
+  const btn    = document.getElementById('launch-btn');
   const status = document.getElementById('launch-status');
   if (found && p) {
-    el.textContent = p;
-    btn.disabled = false;
-    status.textContent = '✓ Game located';
-    status.className = 'launch-status ok';
+    el.textContent = p; btn.disabled = false;
+    status.textContent = '✓ Game located'; status.className = 'launch-status ok';
   } else {
-    el.textContent = 'Game not found — click Locate to set path';
-    btn.disabled = true;
+    el.textContent = 'Game not found — click Locate'; btn.disabled = true;
     status.textContent = 'Locate the game executable to enable launch';
     status.className = 'launch-status';
   }
 }
-
 async function browseForGame() {
   const p = await window.electron.browseGame();
   if (!p) return;
   await window.electron.storeSet('game_path', p);
-  gamePath = p;
-  setGamePath(p, true);
-  toast('Game path saved.');
+  gamePath = p; setGamePath(p, true); toast('Game path saved.');
 }
-
 async function launchGame() {
   if (!gamePath) { toast('No game path set.', true); return; }
   const btn = document.getElementById('launch-btn');
   const status = document.getElementById('launch-status');
-  btn.disabled = true;
-  status.textContent = 'Launching…';
-  status.className = 'launch-status';
-
+  btn.disabled = true; status.textContent = 'Launching…'; status.className = 'launch-status';
   const result = await window.electron.launchGame(gamePath);
-
   if (result.success) {
-    status.textContent = '⚒ Ironveil is running';
-    status.className = 'launch-status ok';
+    status.textContent = '⚒ Ironveil is running'; status.className='launch-status ok';
     toast('Ironveil launched — forge your legend.');
-    setTimeout(() => { btn.disabled = false; }, 4000);
+    setTimeout(()=>{ btn.disabled=false; }, 4000);
   } else {
-    status.textContent = result.error || 'Launch failed.';
-    status.className = 'launch-status err';
-    btn.disabled = false;
-    toast(result.error || 'Launch failed.', true);
+    status.textContent = result.error||'Launch failed.'; status.className='launch-status err';
+    btn.disabled = false; toast(result.error||'Launch failed.',true);
   }
+}
+
+// ══ AUTO-UPDATER ══════════════════════════════════════════════
+async function initUpdater() {
+  const version = await window.electron.getVersion().catch(()=>null);
+  if (version) document.getElementById('app-version-label').textContent = 'v'+version;
+
+  window.electron.onUpdaterStatus((data) => {
+    const bar   = document.getElementById('update-bar');
+    const pip   = document.getElementById('update-pip-dot');
+    const title = document.getElementById('update-bar-title');
+    const sub   = document.getElementById('update-bar-sub');
+    const btn   = document.getElementById('update-action-btn');
+    const prog  = document.getElementById('update-progress-wrap');
+    if (data.type === 'available') {
+      updateState='available'; bar.style.display='flex'; pip.className='update-pip-dot';
+      title.textContent=`Update available — v${data.version}`; sub.textContent='New version ready to download';
+      btn.textContent='Download'; btn.style.display=''; prog.style.display='none';
+    } else if (data.type === 'downloaded') {
+      updateState='downloaded'; bar.style.display='flex'; pip.className='update-pip-dot downloaded';
+      title.textContent=`v${data.version} ready to install`; sub.textContent='Restart to apply update';
+      btn.textContent='Restart & Install'; btn.style.display=''; prog.style.display='none';
+    } else if (data.type === 'error') {
+      console.warn('Updater error:', data.message);
+    }
+  });
+
+  window.electron.onUpdaterProgress((data) => {
+    const bar = document.getElementById('update-bar');
+    bar.style.display='flex';
+    document.getElementById('update-bar-title').textContent='Downloading update…';
+    document.getElementById('update-bar-sub').textContent=fmtBytes(data.bytesPerSec)+'/s';
+    document.getElementById('update-progress-wrap').style.display='flex';
+    document.getElementById('update-progress-fill').style.width=data.percent+'%';
+    document.getElementById('update-progress-pct').textContent=data.percent+'%';
+    document.getElementById('update-action-btn').style.display='none';
+    updateState='downloading';
+  });
+}
+
+async function handleUpdateAction() {
+  if (updateState==='available') {
+    updateState='downloading';
+    document.getElementById('update-action-btn').style.display='none';
+    document.getElementById('update-progress-wrap').style.display='flex';
+    document.getElementById('update-bar-title').textContent='Downloading update…';
+    await window.electron.updaterDownload();
+  } else if (updateState==='downloaded') {
+    await window.electron.updaterInstall();
+  }
+}
+
+function fmtBytes(b) {
+  if(b>1e6) return (b/1e6).toFixed(1)+' MB';
+  if(b>1e3) return (b/1e3).toFixed(0)+' KB';
+  return b+' B';
 }
 
 // ══ REALTIME ══════════════════════════════════════════════════
 function subscribeRealtime() {
   sb.channel('launcher-feed')
-    .on('postgres_changes', { event:'*', schema:'public', table:'public_updates'  }, () => loadNews())
-    .on('postgres_changes', { event:'*', schema:'public', table:'task_groups'     }, () => loadRoadmap())
-    .on('postgres_changes', { event:'*', schema:'public', table:'tasks'           }, () => loadRoadmap())
-    .on('postgres_changes', { event:'*', schema:'public', table:'playtest_status' }, () => loadPlaytest())
+    .on('postgres_changes',{event:'*',schema:'public',table:'public_updates'},()=>loadNews())
+    .on('postgres_changes',{event:'*',schema:'public',table:'task_groups'},()=>loadRoadmap())
+    .on('postgres_changes',{event:'*',schema:'public',table:'tasks'},()=>loadRoadmap())
+    .on('postgres_changes',{event:'*',schema:'public',table:'playtest_status'},()=>loadPlaytest())
     .subscribe();
 }
 
-// ══ TOAST ═════════════════════════════════════════════════════
-function toast(msg, err = false) {
-  const container = document.getElementById('toasts');
+// ══ TOAST ══════════════════════════════════════════════════════
+function toast(msg, err=false) {
   const el = document.createElement('div');
-  el.className = 'toast' + (err ? ' err' : '');
-  el.textContent = msg;
-  container.appendChild(el);
-  requestAnimationFrame(() => { requestAnimationFrame(() => el.classList.add('show')); });
-  setTimeout(() => {
-    el.classList.remove('show');
-    setTimeout(() => el.remove(), 300);
-  }, 3200);
+  el.className = 'toast'+(err?' err':''); el.textContent=msg;
+  document.getElementById('toasts').appendChild(el);
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>el.classList.add('show')); });
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),300); }, 3200);
 }
-
-// ══ INSTALL SYSTEM ════════════════════════════════════════════
-// GitHub config is stored in Supabase `launcher_config` table so
-// the PAT never lives in the client bundle.
-//
-// Expected row in launcher_config (single row, id = 'github'):
-//   { id: 'github', owner: '...', repo: '...', token: '...' }
-
-let ghConfig      = null;  // { owner, repo, token }
-let latestRelease = null;  // latest release object from GitHub
-let installState  = {};    // { installed, installedVer, installDir, exePath }
-
-// Unsubscribe helpers for IPC listeners
-let _offProgress, _offStatus, _offDone;
-
-async function loadGithubConfig() {
-  const { data, error } = await sb
-    .from('launcher_config')
-    .select('owner, repo, token')
-    .eq('id', 'github')
-    .maybeSingle();
-
-  if (error || !data) {
-    console.warn('[install] No launcher_config found:', error?.message);
-    return null;
-  }
-  return data;
-}
-
-async function initInstallPage() {
-  setInstallMsg('');
-
-  // 1. Load install info from disk
-  installState = await window.electron.installInfo();
-  renderInstallState();
-
-  // 2. Fetch GitHub config from Supabase
-  ghConfig = await loadGithubConfig();
-  if (!ghConfig) {
-    setInstallMsg('GitHub config not found in Supabase launcher_config.', true);
-    return;
-  }
-
-  // 3. Check for updates
-  await checkForUpdate();
-}
-
-async function checkForUpdate() {
-  document.getElementById('install-sub').textContent = 'Checking forge servers…';
-  document.getElementById('latest-ver-text').textContent = '…';
-
-  const result = await window.electron.checkUpdate(ghConfig);
-
-  if (!result.success) {
-    setInstallMsg('Could not reach forge servers: ' + result.error, true);
-    document.getElementById('install-sub').textContent = 'Update check failed';
-    document.getElementById('latest-ver-text').textContent = '—';
-    return;
-  }
-
-  latestRelease = result.latestRelease;
-
-  // Update version display
-  document.getElementById('latest-ver-text').textContent = result.latestVersion;
-
-  const installedEl = document.getElementById('installed-ver-text');
-  if (result.installedVersion) {
-    installedEl.textContent = result.installedVersion;
-    installedEl.className = 'ver-block-value ' +
-      (result.upToDate ? 'up-to-date' : 'outdated');
-  } else {
-    installedEl.textContent = 'Not installed';
-    installedEl.className = 'ver-block-value not-installed';
-  }
-
-  // Status subtitle
-  if (!installState.installed) {
-    document.getElementById('install-sub').textContent = 'Ready to install';
-  } else if (result.upToDate) {
-    document.getElementById('install-sub').textContent = 'You\'re up to date';
-  } else {
-    document.getElementById('install-sub').textContent =
-      `Update available: ${result.installedVersion} → ${result.latestVersion}`;
-  }
-
-  // Release notes
-  if (latestRelease?.body) {
-    document.getElementById('release-notes-block').style.display = '';
-    document.getElementById('release-notes-body').textContent = latestRelease.body;
-  }
-
-  // Arm the install button
-  enableInstallButton(result);
-}
-
-function renderInstallState() {
-  const { installed, installedVer, installDir } = installState;
-
-  document.getElementById('install-dir-text').textContent = installDir || '—';
-  document.getElementById('installed-ver-text').textContent =
-    installedVer || 'Not installed';
-
-  document.getElementById('btn-uninstall').style.display = installed ? '' : 'none';
-}
-
-function enableInstallButton(updateResult) {
-  const btn   = document.getElementById('btn-do-install');
-  const label = document.getElementById('install-btn-label');
-  const icon  = document.getElementById('install-btn-icon');
-
-  btn.disabled = false;
-
-  if (!installState.installed) {
-    icon.textContent  = '⬇';
-    label.textContent = 'INSTALL IRONVEIL';
-  } else if (!updateResult.upToDate) {
-    icon.textContent  = '⬆';
-    label.textContent = `UPDATE TO ${updateResult.latestVersion}`;
-  } else {
-    icon.textContent  = '✓';
-    label.textContent = 'REINSTALL';
-  }
-}
-
-async function doInstall() {
-  if (!ghConfig || !latestRelease) {
-    setInstallMsg('Release info not loaded. Reload the page.', true);
-    return;
-  }
-
-  // Pick the platform-appropriate asset
-  const platform = navigator.platform.toLowerCase();
-  const isWin    = platform.includes('win');
-  const isMac    = platform.includes('mac');
-
-  const assets = latestRelease.assets || [];
-  const asset  = assets.find(a => {
-    const n = a.name.toLowerCase();
-    if (isWin) return n.endsWith('.exe') || n.endsWith('.zip');
-    if (isMac) return n.endsWith('.dmg') || n.endsWith('.zip');
-    return n.endsWith('.zip');
-  }) || assets[0];
-
-  if (!asset) {
-    setInstallMsg('No downloadable asset found in this release.', true);
-    return;
-  }
-
-  // Lock UI
-  const btn = document.getElementById('btn-do-install');
-  const uninstBtn = document.getElementById('btn-uninstall');
-  btn.disabled = true;
-  uninstBtn.disabled = true;
-  setInstallMsg('');
-  showProgress(true);
-
-  // Wire up IPC listeners (clean up any previous)
-  if (_offProgress) _offProgress();
-  if (_offStatus)   _offStatus();
-  if (_offDone)     _offDone();
-
-  _offProgress = window.electron.onInstallProgress(({ percent, bytesReceived, totalBytes }) => {
-    document.getElementById('prog-fill').style.width = percent + '%';
-    if (totalBytes > 0) {
-      document.getElementById('prog-bytes').textContent =
-        `${fmtBytes(bytesReceived)} / ${fmtBytes(totalBytes)} — ${percent}%`;
-    } else {
-      document.getElementById('prog-bytes').textContent = `${fmtBytes(bytesReceived)} downloaded`;
-    }
-  });
-
-  _offStatus = window.electron.onInstallStatus(({ message }) => {
-    document.getElementById('prog-status-text').textContent = message;
-  });
-
-  _offDone = window.electron.onInstallDone(async ({ success, error }) => {
-    _offProgress(); _offStatus(); _offDone();
-    showProgress(false);
-    btn.disabled = false;
-    uninstBtn.disabled = false;
-
-    if (success) {
-      setInstallMsg('Installation complete — game is ready to launch.', false);
-      toast('Ironveil installed successfully.');
-      // Refresh state
-      installState = await window.electron.installInfo();
-      renderInstallState();
-      await checkForUpdate();
-      // Also refresh the launch page path
-      await detectGame();
-    } else {
-      setInstallMsg('Installation failed: ' + (error || 'Unknown error'), true);
-      toast('Install failed: ' + (error || 'Unknown error'), true);
-    }
-  });
-
-  // Kick off download
-  await window.electron.installGame({
-    owner:      ghConfig.owner,
-    repo:       ghConfig.repo,
-    token:      ghConfig.token,
-    assetId:    asset.id,
-    assetName:  asset.name,
-    version:    latestRelease.tag_name,
-    installDir: installState.installDir,
-  });
-}
-
-async function doUninstall() {
-  if (!confirm('Remove Ironveil from your system?')) return;
-  const btn = document.getElementById('btn-uninstall');
-  btn.disabled = true;
-  const result = await window.electron.uninstallGame();
-  if (result.success) {
-    toast('Ironveil uninstalled.');
-    installState = await window.electron.installInfo();
-    renderInstallState();
-    document.getElementById('installed-ver-text').textContent = 'Not installed';
-    document.getElementById('installed-ver-text').className = 'ver-block-value not-installed';
-    enableInstallButton({ upToDate: false, latestVersion: latestRelease?.tag_name || '—' });
-    setInstallMsg('Uninstalled.', false);
-  } else {
-    toast('Uninstall failed: ' + result.error, true);
-    btn.disabled = false;
-  }
-}
-
-function showProgress(visible) {
-  document.getElementById('install-progress-wrap').classList.toggle('visible', visible);
-  if (!visible) {
-    document.getElementById('prog-fill').style.width = '0%';
-    document.getElementById('prog-bytes').textContent = '';
-    document.getElementById('prog-status-text').textContent = 'Preparing…';
-  }
-}
-
-function setInstallMsg(msg, isErr = false) {
-  const el = document.getElementById('install-msg');
-  el.textContent = msg;
-  el.className   = 'install-msg' + (isErr ? ' err' : msg ? ' ok' : '');
-}
-
-function fmtBytes(b) {
-  if (b >= 1_073_741_824) return (b / 1_073_741_824).toFixed(2) + ' GB';
-  if (b >= 1_048_576)     return (b / 1_048_576).toFixed(1) + ' MB';
-  if (b >= 1024)          return (b / 1024).toFixed(0) + ' KB';
-  return b + ' B';
-}
-
-// Lazy-load the install page when first navigated to
-const _origShowPage = showPage;
-window.showPage = function(id, btn) {
-  _origShowPage(id, btn);
-  if (id === 'install' && currentUser) {
-    initInstallPage();
-  }
-};
 
 // ══ INIT ══════════════════════════════════════════════════════
 (async () => {
   await initAuth();
+  await initUpdater();
   subscribeRealtime();
 })();
 </script>
