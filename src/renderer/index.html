@@ -759,13 +759,10 @@ body::before {
       <button class="nav-item" id="nav-roadmap" onclick="showPage('roadmap',this)">
         <span class="nav-icon">⚔</span> Codex
       </button>
-<<<<<<< HEAD
       <button class="nav-item" id="nav-servers" onclick="showPage('servers',this)"><span class="nav-icon">⚒</span> Servers</button>
       <button class="nav-item" id="nav-install" onclick="showPage('install',this)">
         <span class="nav-icon">⬇</span> Install
       </button>
-=======
->>>>>>> 054c32383453ca5a6d61f9c33414841ebc43606f
     </nav>
 
     <div class="sidebar-user">
@@ -916,7 +913,6 @@ body::before {
           <div class="progress-fill" id="rm-bar" style="width:0%"></div>
         </div>
       </div>
-<<<<<<< HEAD
     </div>
 
 
@@ -991,12 +987,10 @@ body::before {
           <div class="release-notes-body" id="release-notes-body"></div>
         </div>
 
-=======
       <div class="groups-list" id="rm-groups">
         <div class="group-row"><div class="skel" style="height:44px"></div></div>
         <div class="group-row"><div class="skel" style="height:44px"></div></div>
         <div class="group-row"><div class="skel" style="height:44px"></div></div>
->>>>>>> 054c32383453ca5a6d61f9c33414841ebc43606f
       </div>
     </div>
 
@@ -1266,7 +1260,6 @@ async function launchGame() {
   }
 }
 
-<<<<<<< HEAD
 // SERVER MANAGER
 let serverProfiles=[],privateServers=[],selectedServerId=null,serverRuntime={running:false,profileId:null},_offServerLog=null,_offServerState=null;
 function safeServerText(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -1289,7 +1282,6 @@ function setGlobalServerMessage(msg,err=false){const el=document.getElementById(
 async function addPrivateServer(){const e={name:document.getElementById('private-server-name').value.trim(),address:document.getElementById('private-server-address').value.trim(),port:Number(document.getElementById('private-server-port').value)};if(!e.name||!e.address)return setServerMessage('Enter a display name and address.',true);if(!Number.isInteger(e.port)||e.port<1||e.port>65535)return setServerMessage('Port must be 1–65535.',true);const r=await window.electron.privateServerAdd(e);if(!r.success)return setServerMessage(r.error,true);document.getElementById('private-server-name').value='';document.getElementById('private-server-address').value='';await refreshServerManager();setServerMessage('Private server saved.');}
 async function removePrivateServer(id){const r=await window.electron.privateServerRemove(id);if(!r.success)return setServerMessage(r.error,true);await refreshServerManager();}
 function renderPrivateServers(){const el=document.getElementById('private-server-list');el.innerHTML=privateServers.length?privateServers.map(x=>`<div class="private-server-row"><div class="private-server-info"><div class="private-server-name">${safeServerText(x.name)}</div><div class="private-server-address">${safeServerText(x.address)}:${Number(x.port)}</div></div><button class="server-btn danger" onclick="removePrivateServer('${safeServerText(x.id)}')">REMOVE</button></div>`).join(''):'<div class="server-help" style="padding:10px 0">No private servers saved.</div>';}
-=======
 // ══ AUTO-UPDATER ══════════════════════════════════════════════
 async function initUpdater() {
   const version = await window.electron.getVersion().catch(()=>null);
@@ -1345,7 +1337,6 @@ function fmtBytes(b) {
   if(b>1e3) return (b/1e3).toFixed(0)+' KB';
   return b+' B';
 }
->>>>>>> 054c32383453ca5a6d61f9c33414841ebc43606f
 
 // ══ REALTIME ══════════════════════════════════════════════════
 function subscribeRealtime() {
@@ -1366,7 +1357,6 @@ function toast(msg, err=false) {
   setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),300); }, 3200);
 }
 
-<<<<<<< HEAD
 // ══ INSTALL SYSTEM ════════════════════════════════════════════
 // GitHub config is stored in Supabase `launcher_config` table so
 // the PAT never lives in the client bundle.
@@ -1625,8 +1615,6 @@ window.showPage = function(id, btn) {
   }
 };
 
-=======
->>>>>>> 054c32383453ca5a6d61f9c33414841ebc43606f
 // ══ INIT ══════════════════════════════════════════════════════
 (async () => {
   await initAuth();
