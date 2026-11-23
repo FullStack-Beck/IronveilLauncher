@@ -22,6 +22,23 @@ contextBridge.exposeInMainWorld('electron', {
   launchGame:  (path)     => ipcRenderer.invoke('game:launch', path),
   browseGame:  ()         => ipcRenderer.invoke('game:browse'),
 
+  // ── Dedicated server manager ───────────────────────────────
+  serverProfilesGet: () => ipcRenderer.invoke('server:profiles:get'),
+  serverProfileSave: (profile) => ipcRenderer.invoke('server:profiles:save', profile),
+  serverProfileDelete: (id) => ipcRenderer.invoke('server:profiles:delete', id),
+  serverExecutableGet: () => ipcRenderer.invoke('server:executable:get'),
+  serverExecutableSet: (path) => ipcRenderer.invoke('server:executable:set', path),
+  serverExecutableBrowse: () => ipcRenderer.invoke('server:executable:browse'),
+  serverStatus: () => ipcRenderer.invoke('server:status'),
+  serverLogs: (id) => ipcRenderer.invoke('server:logs', id),
+  serverStart: (id) => ipcRenderer.invoke('server:start', id),
+  serverStop: () => ipcRenderer.invoke('server:stop'),
+  privateServersGet: () => ipcRenderer.invoke('private-servers:get'),
+  privateServerAdd: (entry) => ipcRenderer.invoke('private-servers:add', entry),
+  privateServerRemove: (id) => ipcRenderer.invoke('private-servers:remove', id),
+  onServerLog: (cb) => { const handler = (_, data) => cb(data); ipcRenderer.on('server:log', handler); return () => ipcRenderer.removeListener('server:log', handler); },
+  onServerState: (cb) => { const handler = (_, data) => cb(data); ipcRenderer.on('server:state', handler); return () => ipcRenderer.removeListener('server:state', handler); },
+
   // ── Installation info ──────────────────────────────────────
   // Returns: { installed, installedVer, installDir, exePath }
   installInfo: ()         => ipcRenderer.invoke('game:installInfo'),

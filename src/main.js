@@ -7,6 +7,9 @@ const os   = require('os');
 
 let mainWindow;
 let gameProcess = null;
+let serverProcess = null;
+let activeServerProfileId = null;
+const serverLogBuffers = new Map();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -31,6 +34,7 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
     if (gameProcess) gameProcess.kill();
+    if (serverProcess && !serverProcess.killed) serverProcess.kill();
   });
 }
 
@@ -81,6 +85,93 @@ const setStore = (key, value) => {
   data[key] = value;
   fs.writeFileSync(storePath, JSON.stringify(data, null, 2));
 };
+
+// ── Dedicated server manager ───────────────────────────────────
+const crypto = require('crypto');
+
+function serverStatus() {
+  return { running: !!serverProcess && serverProcess.exitCode === null, profileId: activeServerProfileId, pid: serverProcess?.pid || null };
+}
+function emitServerState() { mainWindow?.webContents.send('server:state', serverStatus()); }
+function pushServerLog(profileId, line) {
+  const lines = serverLogBuffers.get(profileId) || [];
+  lines.push(String(line).replace(/\r$/, ''));
+  if (lines.length > 500) lines.splice(0, lines.length - 500);
+  serverLogBuffers.set(profileId, lines);
+  mainWindow?.webContents.send('server:log', { profileId, line: lines[lines.length - 1] });
+}
+function parseServerArguments(input) {
+  const result = [], pattern = /"([^"]*)"|'([^']*)'|(\S+)/g;
+  let match;
+  while ((match = pattern.exec(input || ''))) result.push(match[1] ?? match[2] ?? match[3]);
+  return result;
+}
+
+ipcMain.handle('server:profiles:get', async () => getStore('server_profiles') || []);
+ipcMain.handle('server:profiles:save', async (_, profile) => {
+  try {
+    if (!profile || typeof profile.name !== 'string' || !profile.name.trim()) return { success:false, error:'A server name is required.' };
+    if (!Number.isInteger(profile.port) || profile.port < 1 || profile.port > 65535) return { success:false, error:'Port must be between 1 and 65535.' };
+    if (!Number.isInteger(profile.maxPlayers) || profile.maxPlayers < 1 || profile.maxPlayers > 64) return { success:false, error:'Maximum players must be between 1 and 64.' };
+    const profiles = getStore('server_profiles') || [];
+    if (profile.id && serverProcess && activeServerProfileId === profile.id) return { success:false, error:'Stop this server before changing its profile.' };
+    const saved = { id:profile.id || crypto.randomUUID(), name:profile.name.trim().slice(0,40), port:profile.port, maxPlayers:profile.maxPlayers, world:String(profile.world||'').trim().slice(0,48), args:String(profile.args||'').slice(0,2000), visibility:profile.visibility === 'public' ? 'public' : 'private' };
+    const i = profiles.findIndex(x => x.id === saved.id); if (i >= 0) profiles[i] = saved; else profiles.push(saved);
+    setStore('server_profiles', profiles); return { success:true, profile:saved };
+  } catch (err) { return { success:false, error:err.message }; }
+});
+ipcMain.handle('server:profiles:delete', async (_, id) => {
+  if (serverProcess && activeServerProfileId === id) return { success:false, error:'Stop the server before deleting its profile.' };
+  setStore('server_profiles', (getStore('server_profiles') || []).filter(p => p.id !== id)); serverLogBuffers.delete(id); return { success:true };
+});
+ipcMain.handle('server:executable:get', async () => getStore('server_executable') || null);
+ipcMain.handle('server:executable:set', async (_, executable) => {
+  if (executable && (!path.isAbsolute(executable) || !fs.existsSync(executable))) return { success:false, error:'The selected server executable does not exist.' };
+  setStore('server_executable', executable || null); return { success:true };
+});
+ipcMain.handle('server:executable:browse', async () => {
+  const { dialog } = require('electron');
+  const filters = process.platform === 'win32' ? [{ name:'Dedicated Server', extensions:['exe'] }] : [{ name:'Dedicated Server', extensions:['*'] }];
+  const result = await dialog.showOpenDialog(mainWindow, { title:'Locate Ironveil Dedicated Server', properties:['openFile'], filters });
+  return result.canceled || !result.filePaths.length ? null : result.filePaths[0];
+});
+ipcMain.handle('server:status', async () => serverStatus());
+ipcMain.handle('server:logs', async (_, id) => serverLogBuffers.get(id) || []);
+ipcMain.handle('server:start', async (_, profileId) => {
+  if (serverProcess && serverProcess.exitCode === null) return { success:false, error:'A dedicated server is already running. Stop it before starting another.' };
+  const profile = (getStore('server_profiles') || []).find(p => p.id === profileId);
+  if (!profile) return { success:false, error:'Server profile not found.' };
+  const executable = getStore('server_executable');
+  if (!executable || !fs.existsSync(executable)) return { success:false, error:'Locate a dedicated server executable before starting a server.' };
+  const vars = { port:String(profile.port), name:profile.name, maxPlayers:String(profile.maxPlayers), world:profile.world || 'World' };
+  const expanded = String(profile.args || '').replace(/\{(port|name|maxPlayers|world)\}/g, (_, k) => vars[k]);
+  const args = parseServerArguments(expanded);
+  try {
+    const child = spawn(executable, args, { cwd:path.dirname(executable), windowsHide:true, detached:false, stdio:['ignore','pipe','pipe'] });
+    serverProcess = child; activeServerProfileId = profile.id; serverLogBuffers.set(profile.id, []);
+    pushServerLog(profile.id, `[Launcher] Starting ${profile.name}`); pushServerLog(profile.id, `[Launcher] ${executable} ${args.join(' ')}`);
+    const attach = (stream, prefix) => { let pending=''; stream.on('data', chunk => { pending += chunk.toString(); const parts=pending.split(/\r?\n/); pending=parts.pop()||''; parts.forEach(line => pushServerLog(profile.id, prefix+line)); }); stream.on('end',()=>{ if(pending) pushServerLog(profile.id,prefix+pending); }); };
+    attach(child.stdout,''); attach(child.stderr,'[stderr] ');
+    child.once('error', err => { pushServerLog(profile.id, `[Launcher] Failed to start: ${err.message}`); if(serverProcess===child){serverProcess=null;activeServerProfileId=null;} emitServerState(); });
+    child.once('exit',(code,signal)=>{ pushServerLog(profile.id, `[Launcher] Process exited (code=${code}, signal=${signal||'none'})`); if(serverProcess===child){serverProcess=null;activeServerProfileId=null;} emitServerState(); });
+    emitServerState(); return { success:true, status:serverStatus() };
+  } catch(err) { serverProcess=null; activeServerProfileId=null; return { success:false, error:err.message }; }
+});
+ipcMain.handle('server:stop', async () => {
+  if (!serverProcess) return { success:false, error:'No server process is running.' };
+  try { serverProcess.kill(); pushServerLog(activeServerProfileId, '[Launcher] Stop requested.'); return { success:true, status:serverStatus() }; }
+  catch(err) { return { success:false, error:err.message }; }
+});
+ipcMain.handle('private-servers:get', async () => getStore('private_servers') || []);
+ipcMain.handle('private-servers:add', async (_, entry) => {
+  if (!entry || !String(entry.name||'').trim() || !String(entry.address||'').trim()) return { success:false, error:'Name and address are required.' };
+  if (!Number.isInteger(entry.port) || entry.port < 1 || entry.port > 65535) return { success:false, error:'Port must be between 1 and 65535.' };
+  const servers=getStore('private_servers')||[];
+  if(servers.some(x=>x.address.toLowerCase()===entry.address.trim().toLowerCase()&&x.port===entry.port)) return {success:false,error:'That address and port are already saved.'};
+  const saved={id:crypto.randomUUID(),name:String(entry.name).trim().slice(0,48),address:String(entry.address).trim().slice(0,255),port:entry.port};
+  servers.push(saved);setStore('private_servers',servers);return {success:true,entry:saved};
+});
+ipcMain.handle('private-servers:remove', async (_, id) => { setStore('private_servers',(getStore('private_servers')||[]).filter(x=>x.id!==id));return {success:true}; });
 
 // ── Game directories ─────────────────────────────────────────
 function getDefaultInstallDir() {
