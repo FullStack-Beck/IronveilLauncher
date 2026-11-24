@@ -35,10 +35,11 @@ function createWindow() {
     mainWindow = null;
     if (gameProcess) gameProcess.kill();
     if (serverProcess && !serverProcess.killed) serverProcess.kill();
+    writeServersFile({ noRunning: true });   // the exit event may never fire once the app is quitting
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => { createWindow(); writeServersFile(); });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 
@@ -107,6 +108,59 @@ function parseServerArguments(input) {
   return result;
 }
 
+// ── Server list for the game (servers.json) ────────────────────
+// The game's FileServerDirectory (MyServers list) reads this file. It lives in a shared folder, NOT in Unity's
+// persistentDataPath: that path contains the Player Settings company name ("DefaultCompany" for now), which will change.
+//   Windows %APPDATA%\Ironveil\servers.json | macOS ~/Library/Application Support/Ironveil | Linux ~/.config/Ironveil
+// Entry fields are exactly the Unity ServerEntry fields. Rewritten after every change to profiles, private servers
+// or the running server process.
+// Only the RUNNING profile is listed (joining a stopped server would just time out). Set to true to list all profiles.
+const INCLUDE_STOPPED_PROFILES = false;
+
+function getServersFilePath() {
+  return path.join(app.getPath('appData'), 'Ironveil', 'servers.json');
+}
+
+function writeServersFile(options = {}) {
+  try {
+    const runningId = options.noRunning ? null
+      : (serverProcess && serverProcess.exitCode === null ? activeServerProfileId : null);
+    const servers = [];
+
+    for (const p of getStore('server_profiles') || []) {
+      if (p.id !== runningId && !INCLUDE_STOPPED_PROFILES) continue;
+      servers.push({
+        id: `profile-${p.id}`, name: p.name,
+        players: 0,                       // placeholder: nothing reports player counts yet (roadmap stage 4c)
+        maxPlayers: p.maxPlayers, version: '', locked: false, favorite: false, mine: true,
+        address: `127.0.0.1:${p.port}`,
+      });
+    }
+    for (const s of getStore('private_servers') || []) {
+      servers.push({
+        id: `private-${s.id}`, name: s.name,
+        players: 0, maxPlayers: 0,        // unknown
+        version: '', locked: false, favorite: false, mine: true,
+        address: `${s.address}:${s.port}`,
+      });
+    }
+
+    const file = getServersFilePath();
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    const json = JSON.stringify({ servers }, null, 2);
+    const tmp = file + '.tmp';
+    try {
+      fs.writeFileSync(tmp, json);
+      fs.renameSync(tmp, file);           // atomic swap: the game never reads half a file
+    } catch {
+      fs.writeFileSync(file, json);       // rename can fail on Windows while the game has the file open
+      try { fs.unlinkSync(tmp); } catch {}
+    }
+  } catch (err) {
+    console.error('[Launcher] Could not write servers.json:', err.message);
+  }
+}
+
 ipcMain.handle('server:profiles:get', async () => getStore('server_profiles') || []);
 ipcMain.handle('server:profiles:save', async (_, profile) => {
   try {
@@ -117,12 +171,12 @@ ipcMain.handle('server:profiles:save', async (_, profile) => {
     if (profile.id && serverProcess && activeServerProfileId === profile.id) return { success:false, error:'Stop this server before changing its profile.' };
     const saved = { id:profile.id || crypto.randomUUID(), name:profile.name.trim().slice(0,40), port:profile.port, maxPlayers:profile.maxPlayers, world:String(profile.world||'').trim().slice(0,48), args:String(profile.args||'').slice(0,2000), visibility:profile.visibility === 'public' ? 'public' : 'private' };
     const i = profiles.findIndex(x => x.id === saved.id); if (i >= 0) profiles[i] = saved; else profiles.push(saved);
-    setStore('server_profiles', profiles); return { success:true, profile:saved };
+    setStore('server_profiles', profiles); writeServersFile(); return { success:true, profile:saved };
   } catch (err) { return { success:false, error:err.message }; }
 });
 ipcMain.handle('server:profiles:delete', async (_, id) => {
   if (serverProcess && activeServerProfileId === id) return { success:false, error:'Stop the server before deleting its profile.' };
-  setStore('server_profiles', (getStore('server_profiles') || []).filter(p => p.id !== id)); serverLogBuffers.delete(id); return { success:true };
+  setStore('server_profiles', (getStore('server_profiles') || []).filter(p => p.id !== id)); serverLogBuffers.delete(id); writeServersFile(); return { success:true };
 });
 ipcMain.handle('server:executable:get', async () => getStore('server_executable') || null);
 ipcMain.handle('server:executable:set', async (_, executable) => {
@@ -152,10 +206,10 @@ ipcMain.handle('server:start', async (_, profileId) => {
     pushServerLog(profile.id, `[Launcher] Starting ${profile.name}`); pushServerLog(profile.id, `[Launcher] ${executable} ${args.join(' ')}`);
     const attach = (stream, prefix) => { let pending=''; stream.on('data', chunk => { pending += chunk.toString(); const parts=pending.split(/\r?\n/); pending=parts.pop()||''; parts.forEach(line => pushServerLog(profile.id, prefix+line)); }); stream.on('end',()=>{ if(pending) pushServerLog(profile.id,prefix+pending); }); };
     attach(child.stdout,''); attach(child.stderr,'[stderr] ');
-    child.once('error', err => { pushServerLog(profile.id, `[Launcher] Failed to start: ${err.message}`); if(serverProcess===child){serverProcess=null;activeServerProfileId=null;} emitServerState(); });
-    child.once('exit',(code,signal)=>{ pushServerLog(profile.id, `[Launcher] Process exited (code=${code}, signal=${signal||'none'})`); if(serverProcess===child){serverProcess=null;activeServerProfileId=null;} emitServerState(); });
-    emitServerState(); return { success:true, status:serverStatus() };
-  } catch(err) { serverProcess=null; activeServerProfileId=null; return { success:false, error:err.message }; }
+    child.once('error', err => { pushServerLog(profile.id, `[Launcher] Failed to start: ${err.message}`); if(serverProcess===child){serverProcess=null;activeServerProfileId=null;} writeServersFile(); emitServerState(); });
+    child.once('exit',(code,signal)=>{ pushServerLog(profile.id, `[Launcher] Process exited (code=${code}, signal=${signal||'none'})`); if(serverProcess===child){serverProcess=null;activeServerProfileId=null;} writeServersFile(); emitServerState(); });
+    writeServersFile(); emitServerState(); return { success:true, status:serverStatus() };
+  } catch(err) { serverProcess=null; activeServerProfileId=null; writeServersFile(); return { success:false, error:err.message }; }
 });
 ipcMain.handle('server:stop', async () => {
   if (!serverProcess) return { success:false, error:'No server process is running.' };
@@ -169,9 +223,9 @@ ipcMain.handle('private-servers:add', async (_, entry) => {
   const servers=getStore('private_servers')||[];
   if(servers.some(x=>x.address.toLowerCase()===entry.address.trim().toLowerCase()&&x.port===entry.port)) return {success:false,error:'That address and port are already saved.'};
   const saved={id:crypto.randomUUID(),name:String(entry.name).trim().slice(0,48),address:String(entry.address).trim().slice(0,255),port:entry.port};
-  servers.push(saved);setStore('private_servers',servers);return {success:true,entry:saved};
+  servers.push(saved);setStore('private_servers',servers);writeServersFile();return {success:true,entry:saved};
 });
-ipcMain.handle('private-servers:remove', async (_, id) => { setStore('private_servers',(getStore('private_servers')||[]).filter(x=>x.id!==id));return {success:true}; });
+ipcMain.handle('private-servers:remove', async (_, id) => { setStore('private_servers',(getStore('private_servers')||[]).filter(x=>x.id!==id));writeServersFile();return {success:true}; });
 
 // ── Game directories ─────────────────────────────────────────
 function getDefaultInstallDir() {
