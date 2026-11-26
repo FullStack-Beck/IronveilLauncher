@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
-const { exec, spawn } = require('child_process');
+const { exec, spawn, execFile } = require('child_process');
 const fs   = require('fs');
 const https = require('https');
 const os   = require('os');
@@ -231,20 +231,29 @@ ipcMain.handle('private-servers:remove', async (_, id) => { setStore('private_se
 function getDefaultInstallDir() {
   const platform = process.platform;
   if (platform === 'win32') {
-    return path.join(process.env['ProgramFiles'] || 'C:\\Program Files', 'Ironveil');
+    // per-user folder: writing to Program Files would need admin rights
+    const local = process.env['LOCALAPPDATA'] || path.join(app.getPath('home'), 'AppData', 'Local');
+    return path.join(local, 'Programs', 'Ironveil');
   } else if (platform === 'darwin') {
     return path.join(app.getPath('home'), 'Applications', 'Ironveil');
   }
   return path.join(app.getPath('home'), 'Ironveil');
 }
 
+/** Build output is Ironveil.exe; ProjectIronveil.* is kept as a fallback for old manual installs. */
+function gameExeNames() {
+  if (process.platform === 'win32')  return ['Ironveil.exe', 'ProjectIronveil.exe'];
+  if (process.platform === 'darwin') return ['Ironveil.app', 'ProjectIronveil.app'];
+  return ['Ironveil', 'ProjectIronveil'];
+}
+
 function getGameExecutable(installDir) {
-  if (process.platform === 'win32') {
-    return path.join(installDir, 'ProjectIronveil.exe');
-  } else if (process.platform === 'darwin') {
-    return path.join(installDir, 'ProjectIronveil.app');
+  const names = gameExeNames();
+  for (const n of names) {
+    const p = path.join(installDir, n);
+    if (fs.existsSync(p)) return p;
   }
-  return path.join(installDir, 'ProjectIronveil');
+  return path.join(installDir, names[0]);
 }
 
 // ── Game detection ───────────────────────────────────────────
@@ -261,6 +270,7 @@ ipcMain.handle('game:detect', async (_, gamePath) => {
   const candidates = [
     ...(storedDir ? [getGameExecutable(storedDir)] : []),
     getGameExecutable(getDefaultInstallDir()),
+    getGameExecutable(path.join(process.env['ProgramFiles'] || 'C:\\Program Files', 'Ironveil')),  // older installs
     // Legacy paths for manually installed copies
     'C:\\Program Files\\ProjectIronveil\\ProjectIronveil.exe',
     'C:\\Program Files (x86)\\ProjectIronveil\\ProjectIronveil.exe',
@@ -310,268 +320,167 @@ ipcMain.handle('game:browse', async () => {
 
 // ═══════════════════════════════════════════════════════════════
 // GAME INSTALLATION SYSTEM
-// Fetches releases from a private GitHub repo using a token
-// supplied by the renderer (loaded from Supabase, never hardcoded).
+// The renderer asks the `get-latest-build` Supabase Edge function which builds this
+// account may download, then hands us a short-lived pre-signed URL. This process never
+// sees a GitHub token. (The old releases:list and game:checkUpdate handlers were removed
+// on purpose; the renderer does the listing through the Edge function.)
 // ═══════════════════════════════════════════════════════════════
 
-/**
- * Fetch JSON from GitHub API with the supplied token.
- */
-function githubGet(url, token) {
+const DOWNLOAD_HOST_SUFFIXES = ['github.com', 'githubusercontent.com'];
+
+function isAllowedDownloadUrl(u) {
+  try {
+    const url = new URL(u);
+    return url.protocol === 'https:' &&
+      DOWNLOAD_HOST_SUFFIXES.some(s => url.hostname === s || url.hostname.endsWith('.' + s));
+  } catch { return false; }
+}
+
+/** Download a (pre-signed) URL to a file, following redirects. No auth header: the URL carries its own. */
+function downloadToFile(url, dest, onProgress, redirects = 0) {
   return new Promise((resolve, reject) => {
-    const opts = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'User-Agent': 'IronveilLauncher/1.0',
-        'X-GitHub-Api-Version': '2022-11-28'
+    if (redirects > 5) return reject(new Error('Too many redirects'));
+    if (!isAllowedDownloadUrl(url)) return reject(new Error('Download URL not allowed'));
+    const req = https.get(url, { headers: { 'User-Agent': 'IronveilLauncher/1.0' } }, (res) => {
+      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
+        res.resume();
+        downloadToFile(new URL(res.headers.location, url).toString(), dest, onProgress, redirects + 1).then(resolve, reject);
+        return;
       }
-    };
-    https.get(url, opts, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)); }
-        catch { reject(new Error('Invalid JSON from GitHub API')); }
-      });
-    }).on('error', reject);
+      if (res.statusCode !== 200) {
+        res.resume();
+        return reject(new Error(`Download failed (HTTP ${res.statusCode}). The link may have expired; try again.`));
+      }
+      const total = parseInt(res.headers['content-length'] || '0', 10);
+      let received = 0;
+      const file = fs.createWriteStream(dest);
+      res.on('data', (chunk) => { received += chunk.length; onProgress(received, total); });
+      res.on('error', (e) => { file.destroy(); reject(e); });
+      res.pipe(file);
+      file.on('finish', () => file.close(() => resolve()));
+      file.on('error', reject);
+    });
+    req.setTimeout(30000, () => req.destroy(new Error('Download timed out')));
+    req.on('error', reject);
   });
 }
 
-/**
- * Fetch list of releases from the private repo.
- * Returns: [{ id, tag_name, name, published_at, assets: [{ id, name, size }] }]
- */
-ipcMain.handle('releases:list', async (_, { owner, repo, token }) => {
-  try {
-    const releases = await githubGet(
-      `https://api.github.com/repos/${owner}/${repo}/releases`,
-      token
-    );
-    if (!Array.isArray(releases)) {
-      return { success: false, error: releases.message || 'Unknown error from GitHub' };
-    }
-    // Return a safe subset (no sensitive fields)
-    return {
-      success: true,
-      releases: releases.map(r => ({
-        id:           r.id,
-        tag_name:     r.tag_name,
-        name:         r.name,
-        body:         r.body,
-        published_at: r.published_at,
-        assets: (r.assets || []).map(a => ({
-          id:   a.id,
-          name: a.name,
-          size: a.size,
-        }))
-      }))
-    };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
-});
-
-/**
- * Check installed version against latest release.
- * Returns: { upToDate, installedVersion, latestVersion, latestRelease }
- */
-ipcMain.handle('game:checkUpdate', async (_, { owner, repo, token }) => {
-  const installedVersion = getStore('installed_version') || null;
-
-  try {
-    const latest = await githubGet(
-      `https://api.github.com/repos/${owner}/${repo}/releases/latest`,
-      token
-    );
-    if (latest.message) {
-      return { success: false, error: latest.message };
-    }
-    return {
-      success: true,
-      upToDate: installedVersion === latest.tag_name,
-      installedVersion,
-      latestVersion: latest.tag_name,
-      latestRelease: {
-        id:           latest.id,
-        tag_name:     latest.tag_name,
-        name:         latest.name,
-        body:         latest.body,
-        published_at: latest.published_at,
-        assets: (latest.assets || []).map(a => ({ id: a.id, name: a.name, size: a.size }))
-      }
-    };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
-});
-
-/**
- * Download a private GitHub release asset and install it.
- *
- * Flow:
- *  1. Fetch the asset redirect URL from GitHub API (auth required).
- *  2. Download the binary to a temp file, emitting progress events.
- *  3. Run the installer (Windows: .exe setup; macOS: mount .dmg and copy .app).
- *  4. Store the installed version tag in the config.
- *
- * Progress events sent to renderer:
- *   'install:progress' { percent, bytesReceived, totalBytes }
- *   'install:status'   { message }
- *   'install:done'     { success, error? }
- */
-ipcMain.handle('game:install', async (_, { owner, repo, token, assetId, assetName, version, installDir }) => {
-  const targetDir = installDir || getDefaultInstallDir();
-
-  // Ensure install directory exists
-  fs.mkdirSync(targetDir, { recursive: true });
-
-  const tmpFile = path.join(os.tmpdir(), assetName);
-
-  const send = (channel, payload) => {
-    mainWindow?.webContents.send(channel, payload);
-  };
-
-  return new Promise((resolve) => {
-
-    // ── Step 1: Get asset redirect URL ──────────────────────
-    send('install:status', { message: 'Contacting forge servers…' });
-
-    const reqOptions = {
-      hostname: 'api.github.com',
-      path: `/repos/${owner}/${repo}/releases/assets/${assetId}`,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/octet-stream',
-        'User-Agent': 'IronveilLauncher/1.0',
-        'X-GitHub-Api-Version': '2022-11-28'
-      }
-    };
-
-    const doDownload = (downloadUrl) => {
-      send('install:status', { message: 'Downloading build…' });
-
-      const file = fs.createWriteStream(tmpFile);
-      let bytesReceived = 0;
-      let totalBytes = 0;
-
-      const request = https.get(downloadUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'User-Agent': 'IronveilLauncher/1.0'
-        }
-      }, (res) => {
-        // Handle redirect (GitHub asset downloads redirect to S3)
-        if (res.statusCode === 302 || res.statusCode === 301) {
-          file.close();
-          doDownload(res.headers.location);
-          return;
-        }
-
-        totalBytes = parseInt(res.headers['content-length'] || '0', 10);
-
-        res.on('data', (chunk) => {
-          bytesReceived += chunk.length;
-          const percent = totalBytes ? Math.round((bytesReceived / totalBytes) * 100) : 0;
-          send('install:progress', { percent, bytesReceived, totalBytes });
-        });
-
-        res.pipe(file);
-
-        file.on('finish', () => {
-          file.close(async () => {
-            send('install:status', { message: 'Installing…' });
-            try {
-              await runInstaller(tmpFile, assetName, targetDir, send);
-              setStore('installed_version', version);
-              setStore('game_install_dir', targetDir);
-              send('install:done', { success: true });
-              resolve({ success: true });
-            } catch (err) {
-              send('install:done', { success: false, error: err.message });
-              resolve({ success: false, error: err.message });
-            } finally {
-              // Clean up tmp file
-              try { fs.unlinkSync(tmpFile); } catch {}
-            }
-          });
-        });
-
-        file.on('error', (err) => {
-          file.close();
-          try { fs.unlinkSync(tmpFile); } catch {}
-          send('install:done', { success: false, error: err.message });
-          resolve({ success: false, error: err.message });
-        });
-      });
-
-      request.on('error', (err) => {
-        send('install:done', { success: false, error: err.message });
-        resolve({ success: false, error: err.message });
-      });
-    };
-
-    // First request to get the redirect to the actual asset
-    const firstReq = https.get(`https://api.github.com${reqOptions.path}`, reqOptions, (res) => {
-      if (res.statusCode === 302 || res.statusCode === 301) {
-        doDownload(res.headers.location);
-      } else {
-        // Shouldn't normally happen, but try to pipe directly
-        doDownload(`https://api.github.com${reqOptions.path}`);
-      }
-    });
-
-    firstReq.on('error', (err) => {
-      send('install:done', { success: false, error: err.message });
-      resolve({ success: false, error: err.message });
-    });
-  });
-});
-
-/**
- * Run the platform-appropriate installer.
- */
-async function runInstaller(filePath, assetName, targetDir, send) {
-  const ext = path.extname(assetName).toLowerCase();
-  const platform = process.platform;
-
-  if (platform === 'win32') {
-    if (ext === '.exe') {
-      // NSIS / Inno Setup installer
-      send('install:status', { message: 'Running Windows installer…' });
-      await runCommand(`"${filePath}" /S /D="${targetDir}"`);
-    } else if (ext === '.zip') {
-      send('install:status', { message: 'Extracting build…' });
-      await runCommand(`powershell -Command "Expand-Archive -Force -Path '${filePath}' -DestinationPath '${targetDir}'"`);
-    }
-  } else if (platform === 'darwin') {
-    if (ext === '.dmg') {
-      // Mount DMG, copy .app, unmount
-      send('install:status', { message: 'Mounting disk image…' });
-      const mountPoint = `/Volumes/Ironveil_${Date.now()}`;
-      await runCommand(`hdiutil attach "${filePath}" -mountpoint "${mountPoint}" -quiet`);
-      send('install:status', { message: 'Copying game to Applications…' });
-      const appFiles = fs.readdirSync(mountPoint).filter(f => f.endsWith('.app'));
-      if (!appFiles.length) throw new Error('No .app found inside DMG');
-      fs.mkdirSync(targetDir, { recursive: true });
-      await runCommand(`cp -R "${path.join(mountPoint, appFiles[0])}" "${targetDir}/"`);
-      await runCommand(`hdiutil detach "${mountPoint}" -quiet`);
-    } else if (ext === '.zip') {
-      send('install:status', { message: 'Extracting build…' });
-      fs.mkdirSync(targetDir, { recursive: true });
-      await runCommand(`unzip -o "${filePath}" -d "${targetDir}"`);
-    }
-  }
-}
-
-function runCommand(cmd) {
+function runFile(cmd, args, opts = {}) {
   return new Promise((resolve, reject) => {
-    exec(cmd, (err) => {
-      if (err) reject(err);
+    execFile(cmd, args, { windowsHide: true, maxBuffer: 10 * 1024 * 1024, ...opts }, (err, _out, stderr) => {
+      if (err) reject(new Error((stderr || err.message || 'command failed').toString().trim()));
       else resolve();
     });
   });
 }
+
+/** Extract a .zip. Windows: built-in tar.exe (fast), falling back to PowerShell. Others: unzip. */
+async function extractArchive(zipPath, destDir) {
+  if (!zipPath.toLowerCase().endsWith('.zip')) throw new Error('Unsupported build format (expected a .zip).');
+  if (process.platform === 'win32') {
+    const tar = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe');
+    try { await runFile(tar, ['-xf', zipPath, '-C', destDir]); return; } catch { /* fall through */ }
+    await runFile('powershell.exe', [
+      '-NoProfile', '-NonInteractive', '-Command',
+      'Expand-Archive -Force -LiteralPath $env:IV_ZIP -DestinationPath $env:IV_DEST'
+    ], { env: { ...process.env, IV_ZIP: zipPath, IV_DEST: destDir } });
+  } else {
+    await runFile('unzip', ['-oq', zipPath, '-d', destDir]);
+  }
+}
+
+function hasGameExe(dir) {
+  return gameExeNames().some(n => fs.existsSync(path.join(dir, n)));
+}
+
+/** The folder that actually contains the game exe: the zip root, or its single top-level folder. */
+function findBuildRoot(dir) {
+  if (hasGameExe(dir)) return dir;
+  const subdirs = fs.readdirSync(dir, { withFileTypes: true }).filter(e => e.isDirectory());
+  if (subdirs.length === 1) {
+    const sub = path.join(dir, subdirs[0].name);
+    if (hasGameExe(sub)) return sub;
+  }
+  return null;
+}
+
+let installing = false;
+
+/**
+ * Install a build.  Renderer passes { url, assetName, version } where url comes from
+ * get-latest-build (action "download").
+ *
+ * Flow: download zip to temp -> extract to "<installDir>.new" -> rename old dir to ".old"
+ * -> rename new into place -> delete old. If the game is running the rename fails and the
+ * old install is left untouched.
+ *
+ * Events to renderer:
+ *   'install:status'   { message }
+ *   'install:progress' { percent, bytesReceived, totalBytes }
+ *   'install:done'     { success, error? }
+ */
+ipcMain.handle('game:install', async (_, { url, assetName, version }) => {
+  if (installing) return { success: false, error: 'An install is already running.' };
+  installing = true;
+
+  const send = (channel, payload) => mainWindow?.webContents.send(channel, payload);
+  const finish = (result) => { installing = false; send('install:done', result); return result; };
+
+  const safeName   = path.basename(String(assetName || 'ironveil-build.zip'));
+  const targetDir  = getStore('game_install_dir') || getDefaultInstallDir();
+  const stagingDir = targetDir + '.new';
+  const oldDir     = targetDir + '.old';
+  const tmpFile    = path.join(os.tmpdir(), `ironveil-${Date.now()}-${safeName}`);
+
+  try {
+    // Safety: this code deletes/replaces targetDir, so never do it for an unexpected folder.
+    if (path.basename(targetDir).toLowerCase() !== 'ironveil') {
+      throw new Error(`Refusing to install into "${targetDir}".`);
+    }
+
+    send('install:status', { message: 'Downloading build…' });
+    await downloadToFile(url, tmpFile, (received, total) => {
+      send('install:progress', {
+        percent: total ? Math.round((received / total) * 100) : 0,
+        bytesReceived: received,
+        totalBytes: total
+      });
+    });
+
+    send('install:status', { message: 'Extracting build…' });
+    fs.rmSync(stagingDir, { recursive: true, force: true });
+    fs.mkdirSync(stagingDir, { recursive: true });
+    await extractArchive(tmpFile, stagingDir);
+
+    const buildRoot = findBuildRoot(stagingDir);
+    if (!buildRoot) throw new Error('The downloaded build does not contain the game executable (Ironveil.exe).');
+
+    send('install:status', { message: 'Replacing old version…' });
+    fs.rmSync(oldDir, { recursive: true, force: true });
+    fs.mkdirSync(path.dirname(targetDir), { recursive: true });
+    if (fs.existsSync(targetDir)) {
+      try { fs.renameSync(targetDir, oldDir); }
+      catch { throw new Error('Could not replace the old version. Close Ironveil and try again.'); }
+    }
+    try { fs.renameSync(buildRoot, targetDir); }
+    catch (e) {
+      try { if (fs.existsSync(oldDir)) fs.renameSync(oldDir, targetDir); } catch {}
+      throw e;
+    }
+    try { fs.rmSync(oldDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 300 }); } catch {}
+
+    setStore('installed_version', version);
+    setStore('game_install_dir', targetDir);
+    return finish({ success: true });
+  } catch (err) {
+    return finish({ success: false, error: err.message });
+  } finally {
+    try { fs.unlinkSync(tmpFile); } catch {}
+    try { fs.rmSync(stagingDir, { recursive: true, force: true }); } catch {}
+  }
+});
+
+ipcMain.handle('app:version', () => app.getVersion());
 
 /**
  * Uninstall: remove the game directory and clear stored version.
@@ -580,6 +489,9 @@ ipcMain.handle('game:uninstall', async () => {
   const installDir = getStore('game_install_dir');
   if (!installDir || !fs.existsSync(installDir)) {
     return { success: false, error: 'No installed game found.' };
+  }
+  if (path.basename(installDir).toLowerCase() !== 'ironveil') {
+    return { success: false, error: `Refusing to delete "${installDir}".` };
   }
   try {
     fs.rmSync(installDir, { recursive: true, force: true });

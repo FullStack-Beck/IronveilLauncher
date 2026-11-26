@@ -716,6 +716,40 @@ body::before {
 
 /* Server manager */
 #page-servers{background:linear-gradient(160deg,var(--parch),var(--parch2))}.server-header{padding:24px 32px 18px;border-bottom:1px solid var(--border);background:var(--parch2);display:flex;justify-content:space-between;align-items:center;gap:16px}.server-title{font:700 18px Cinzel,serif;letter-spacing:.1em}.server-sub{color:var(--ink4);font-style:italic}.server-body{padding:20px 24px 32px;display:grid;grid-template-columns:minmax(260px,.9fr) minmax(340px,1.4fr);gap:18px;align-items:start}.server-panel{background:var(--parch2);border:1px solid var(--border2);padding:18px;min-width:0}.server-panel-title{font:10px Cinzel,serif;letter-spacing:.16em;color:var(--ink4);margin-bottom:14px}.server-field{margin-bottom:12px}.server-field label{display:block;font:9px Cinzel,serif;letter-spacing:.14em;color:var(--ink4);margin-bottom:5px}.server-field input,.server-field textarea,.server-field select{width:100%;padding:9px 10px;border:1px solid var(--border2);background:var(--parch);color:var(--ink);font:14px 'Crimson Pro',serif;outline:none}.server-field textarea{min-height:65px;resize:vertical;font:11px monospace}.server-field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.server-help{color:var(--ink4);font-size:12px;line-height:1.45;margin-top:5px}.server-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.server-btn{border:1px solid var(--border2);background:var(--ink2);color:var(--parch);padding:9px 13px;font:10px Cinzel,serif;letter-spacing:.08em;cursor:pointer}.server-btn.secondary{background:transparent;color:var(--ink3)}.server-btn.danger{background:transparent;color:var(--blood);border-color:rgba(122,28,28,.35)}.server-btn:disabled{opacity:.4;cursor:default}.server-profile-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}.server-profile{border:1px solid var(--border);background:rgba(245,234,212,.55);padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer}.server-profile.selected{border-color:var(--gold2);background:var(--parch3)}.server-profile-main{flex:1;min-width:0}.server-profile-name{font:11px Cinzel,serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.server-profile-meta,.private-server-address{font-size:12px;color:var(--ink4)}.server-pill{font:8px Cinzel,serif;border:1px solid var(--border2);padding:3px 6px;color:var(--ink4)}.server-pill.running{color:var(--teal);border-color:var(--teal2)}.server-empty{padding:20px;text-align:center;border:1px dashed var(--border2);color:var(--ink4);font-style:italic}.server-status{font:10px Cinzel,serif;letter-spacing:.1em;color:var(--ink4);margin-bottom:12px}.server-log{background:#17120b;color:#d6c49b;padding:12px;min-height:120px;max-height:220px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:10px/1.5 monospace;user-select:text}.server-msg{min-height:18px;margin-top:8px;font:10px Cinzel,serif;color:var(--ink4)}.server-msg.err{color:var(--blood)}.server-divider{border:0;border-top:1px solid var(--border);margin:16px 0}.private-server-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}.private-server-info{flex:1;min-width:0}.private-server-name{font:10px Cinzel,serif}@media(max-width:950px){.server-body{grid-template-columns:1fr}}
+
+/* ── INSTALL / UPDATE PAGE ───────────────────────────────────── */
+.install-header { padding: 22px 28px 10px; }
+.install-title  { font-family: 'Cinzel', serif; font-size: 20px; letter-spacing: .08em; color: var(--ink); }
+.install-sub    { font-style: italic; font-size: 14px; color: var(--ink4); margin-top: 4px; }
+.install-body   { padding: 8px 28px 28px; display: flex; flex-direction: column; gap: 14px; max-width: 640px; }
+.version-card   { display: flex; gap: 40px; padding: 14px 16px; background: var(--parch2); border: 1px solid var(--border2); }
+.ver-block-label { font-family: 'Cinzel', serif; font-size: 9.5px; letter-spacing: .12em; color: var(--ink4); }
+.ver-block-value { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 15px; color: var(--ink2); margin-top: 4px; }
+.ver-block-value.up-to-date    { color: var(--teal); }
+.ver-block-value.outdated      { color: var(--gold); }
+.ver-block-value.not-installed { color: var(--ink4); font-style: italic; }
+.install-dir-row   { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--ink3); }
+.install-dir-label { font-family: 'Cinzel', serif; font-size: 9.5px; letter-spacing: .12em; color: var(--ink4); min-width: 92px; }
+.install-dir-path  { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 11px; color: var(--ink3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.install-dir-row select { padding: 4px 8px; background: var(--parch); border: 1px solid var(--border2); color: var(--ink2); font-family: 'Cinzel', serif; font-size: 11px; }
+.install-actions { display: flex; gap: 10px; align-items: center; }
+.btn-install   { display: flex; gap: 8px; align-items: center; padding: 10px 22px; background: var(--gold); border: 1px solid var(--gold2); color: var(--parch); font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: .1em; cursor: pointer; transition: all .2s; }
+.btn-install:hover:not(:disabled) { background: var(--gold2); }
+.btn-install:disabled { opacity: .45; cursor: default; }
+.btn-uninstall { padding: 10px 16px; background: none; border: 1px solid var(--border3); color: var(--blood); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: .08em; cursor: pointer; }
+.btn-uninstall:disabled { opacity: .45; cursor: default; }
+.install-progress-wrap { display: none; flex-direction: column; gap: 6px; }
+.install-progress-wrap.visible { display: flex; }
+.prog-status-text { font-style: italic; font-size: 14px; color: var(--ink3); }
+.prog-track { height: 8px; background: var(--parch3); border: 1px solid var(--border2); }
+.prog-fill  { height: 100%; width: 0; background: var(--gold2); transition: width .2s; }
+.prog-bytes { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 11px; color: var(--ink4); }
+.install-msg     { font-size: 14px; min-height: 18px; }
+.install-msg.ok  { color: var(--teal); }
+.install-msg.err { color: var(--blood); }
+.release-notes      { border: 1px solid var(--border2); background: var(--parch2); }
+.release-notes-head { padding: 8px 12px; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .12em; color: var(--ink4); border-bottom: 1px solid var(--border); }
+.release-notes-body { padding: 10px 12px; font-size: 14px; color: var(--ink2); white-space: pre-wrap; user-select: text; }
 </style>
 </head>
 <body>
@@ -959,6 +993,18 @@ body::before {
           <span class="install-dir-path" id="install-dir-text">—</span>
         </div>
 
+        <!-- Channel (admins and testers only; hidden when only one is allowed) -->
+        <div class="install-dir-row" id="channel-row" style="display:none">
+          <span class="install-dir-label">CHANNEL</span>
+          <select id="channel-select" onchange="onChannelChange(this.value)"></select>
+        </div>
+
+        <!-- Auto-update -->
+        <div class="install-dir-row">
+          <span class="install-dir-label">AUTO-UPDATE</span>
+          <label><input type="checkbox" id="auto-update-chk" onchange="setAutoUpdate(this.checked)"> Keep my build up to date</label>
+        </div>
+
         <!-- Action buttons -->
         <div class="install-actions">
           <button class="btn-install" id="btn-do-install" onclick="doInstall()" disabled>
@@ -1003,7 +1049,7 @@ body::before {
 // ══ CONFIG ═══════════════════════════════════════════════════
 const SUPABASE_URL = 'https://tzehikqnnzaykyaomzer.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWhpa3FubnpheWt5YW9temVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3OTMxMzMsImV4cCI6MjA5NjM2OTEzM30.Trm5ha1xSr5MvQ-s3AKDdcBncdVCH_xi3CjhVfQaLfo';
-const HAS_ACCESS_ROLES = ['developer','admin','tester'];
+// Which builds an account may download is decided server-side by get-latest-build (see INSTALL SYSTEM).
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }
@@ -1051,6 +1097,7 @@ async function handleSignedIn(session) {
   showPage('play', document.getElementById('nav-play'));
 
   await loadAll();
+  autoUpdateOnStart();   // background: refresh allowed builds and update an existing install
 }
 
 function handleSignedOut() {
@@ -1125,10 +1172,7 @@ async function loadPlaytest() {
     pip.className = 'pt-pip';
     text.textContent = data.notes || 'Closed Alpha — Not Yet Accepting Players';
   }
-  const role = currentProfile?.role || 'user';
-  const hasAccess = HAS_ACCESS_ROLES.includes(role);
-  document.getElementById('launch-section').style.display    = hasAccess ? '' : 'none';
-  document.getElementById('no-access-section').style.display = hasAccess ? 'none' : '';
+  applyAccessGate();
 }
 
 async function loadNews() {
@@ -1286,6 +1330,8 @@ function renderPrivateServers(){const el=document.getElementById('private-server
 async function initUpdater() {
   const version = await window.electron.getVersion().catch(()=>null);
   if (version) document.getElementById('app-version-label').textContent = 'v'+version;
+  // electron-updater is not wired in main.js/preload.js yet; without this guard the startup chain throws
+  if (typeof window.electron.onUpdaterStatus !== 'function') return;
 
   window.electron.onUpdaterStatus((data) => {
     const bar   = document.getElementById('update-bar');
@@ -1358,97 +1404,159 @@ function toast(msg, err=false) {
 }
 
 // ══ INSTALL SYSTEM ════════════════════════════════════════════
-// GitHub config is stored in Supabase `launcher_config` table so
-// the PAT never lives in the client bundle.
-//
-// Expected row in launcher_config (single row, id = 'github'):
-//   { id: 'github', owner: '...', repo: '...', token: '...' }
+// Game builds come from the `get-latest-build` Edge function (Supabase). The function checks
+// profiles.role and returns only the channels this account may use, so the launcher never
+// holds a GitHub token. Roles: admin = dev + beta + release, tester = beta + release,
+// user = release. The checks here are presentation only; the server is the gate.
 
-let ghConfig      = null;  // { owner, repo, token }
-let latestRelease = null;  // latest release object from GitHub
-let installState  = {};    // { installed, installedVer, installDir, exePath }
+let buildsInfo       = null;   // { role, channels, releases[] } from get-latest-build
+let latestRelease    = null;   // newest downloadable release in the selected channel
+let selectedChannel  = null;
+let releaseAvailable = false;  // any downloadable build exists for this account
+let installState     = {};     // { installed, installedVer, installDir, exePath }
+let installBusy      = false;
 
 // Unsubscribe helpers for IPC listeners
 let _offProgress, _offStatus, _offDone;
 
-async function loadGithubConfig() {
-  const { data, error } = await sb
-    .from('launcher_config')
-    .select('owner, repo, token')
-    .eq('id', 'github')
-    .maybeSingle();
+const CHANNEL_LABELS = { release: 'Release', beta: 'Beta', dev: 'Developer' };
 
-  if (error || !data) {
-    console.warn('[install] No launcher_config found:', error?.message);
-    return null;
-  }
+function channelOfTag(tag) {
+  if (!tag) return null;
+  if (tag.startsWith('dev-'))  return 'dev';
+  if (tag.startsWith('beta-')) return 'beta';
+  if (/^v\d/.test(tag))        return 'release';
+  return null;
+}
+
+async function fnErrorMessage(error) {
+  try { const j = await error.context.json(); if (j?.error) return j.error; } catch {}
+  return error?.message || 'Unknown error';
+}
+
+async function fetchBuilds() {
+  const { data, error } = await sb.functions.invoke('get-latest-build', { body: { action: 'list' } });
+  if (error) throw new Error(await fnErrorMessage(error));
   return data;
+}
+
+async function refreshBuilds() {
+  buildsInfo = await fetchBuilds();
+  const allowed  = buildsInfo.channels || [];
+  const releases = buildsInfo.releases || [];
+  const hasBuild = c => releases.some(r => r.channel === c && r.asset);
+  const stored   = await window.electron.storeGet('build_channel').catch(() => null);
+  const installedChannel = channelOfTag(installState.installedVer);
+
+  selectedChannel =
+    (stored && allowed.includes(stored)) ? stored :
+    (installedChannel && allowed.includes(installedChannel)) ? installedChannel :
+    ['dev', 'beta', 'release'].find(c => allowed.includes(c) && hasBuild(c)) || allowed[0] || null;
+
+  latestRelease    = releases.find(r => r.channel === selectedChannel && r.asset) || null;
+  releaseAvailable = releases.some(r => r.asset);
+  renderChannelPicker();
+  applyAccessGate();
+}
+
+// Play page: show the launch button if this account can have a build (or already has one)
+function applyAccessGate() {
+  const role = currentProfile?.role || 'user';
+  const hasAccess = role === 'admin' || role === 'tester' || releaseAvailable || !!installState.installed;
+  document.getElementById('launch-section').style.display    = hasAccess ? '' : 'none';
+  document.getElementById('no-access-section').style.display = hasAccess ? 'none' : '';
+}
+
+function renderChannelPicker() {
+  const allowed = buildsInfo?.channels || [];
+  const row = document.getElementById('channel-row');
+  const sel = document.getElementById('channel-select');
+  row.style.display = allowed.length > 1 ? '' : 'none';
+  sel.innerHTML = allowed
+    .map(c => `<option value="${c}"${c === selectedChannel ? ' selected' : ''}>${CHANNEL_LABELS[c] || c}</option>`)
+    .join('');
+}
+
+async function onChannelChange(c) {
+  selectedChannel = c;
+  await window.electron.storeSet('build_channel', c);
+  latestRelease = (buildsInfo?.releases || []).find(r => r.channel === c && r.asset) || null;
+  renderUpdateState();
+}
+
+async function setAutoUpdate(on) {
+  await window.electron.storeSet('auto_update', !!on);
 }
 
 async function initInstallPage() {
   setInstallMsg('');
-
-  // 1. Load install info from disk
   installState = await window.electron.installInfo();
   renderInstallState();
-
-  // 2. Fetch GitHub config from Supabase
-  ghConfig = await loadGithubConfig();
-  if (!ghConfig) {
-    setInstallMsg('GitHub config not found in Supabase launcher_config.', true);
-    return;
-  }
-
-  // 3. Check for updates
+  const auto = await window.electron.storeGet('auto_update').catch(() => null);
+  document.getElementById('auto-update-chk').checked = auto !== false;   // default ON
   await checkForUpdate();
 }
 
 async function checkForUpdate() {
   document.getElementById('install-sub').textContent = 'Checking forge servers…';
   document.getElementById('latest-ver-text').textContent = '…';
-
-  const result = await window.electron.checkUpdate(ghConfig);
-
-  if (!result.success) {
-    setInstallMsg('Could not reach forge servers: ' + result.error, true);
+  try {
+    await refreshBuilds();
+  } catch (e) {
+    setInstallMsg('Could not reach forge servers: ' + e.message, true);
     document.getElementById('install-sub').textContent = 'Update check failed';
     document.getElementById('latest-ver-text').textContent = '—';
-    return;
+    return null;
+  }
+  return renderUpdateState();
+}
+
+function renderUpdateState() {
+  const installedVersion = installState.installedVer || null;
+  const installedEl = document.getElementById('installed-ver-text');
+  const btn   = document.getElementById('btn-do-install');
+  const label = document.getElementById('install-btn-label');
+  const icon  = document.getElementById('install-btn-icon');
+  const notesBlock = document.getElementById('release-notes-block');
+
+  if (!latestRelease) {
+    document.getElementById('latest-ver-text').textContent = '—';
+    document.getElementById('install-sub').textContent = releaseAvailable
+      ? 'No build in this channel yet'
+      : 'No build is available for your account yet';
+    installedEl.textContent = installedVersion || 'Not installed';
+    installedEl.className = 'ver-block-value ' + (installedVersion ? '' : 'not-installed');
+    btn.disabled = true; icon.textContent = '⬇'; label.textContent = 'NO BUILD AVAILABLE';
+    notesBlock.style.display = 'none';
+    return null;
   }
 
-  latestRelease = result.latestRelease;
+  const upToDate = installedVersion === latestRelease.tag;
+  document.getElementById('latest-ver-text').textContent = latestRelease.tag;
 
-  // Update version display
-  document.getElementById('latest-ver-text').textContent = result.latestVersion;
-
-  const installedEl = document.getElementById('installed-ver-text');
-  if (result.installedVersion) {
-    installedEl.textContent = result.installedVersion;
-    installedEl.className = 'ver-block-value ' +
-      (result.upToDate ? 'up-to-date' : 'outdated');
+  if (installedVersion) {
+    installedEl.textContent = installedVersion;
+    installedEl.className = 'ver-block-value ' + (upToDate ? 'up-to-date' : 'outdated');
   } else {
     installedEl.textContent = 'Not installed';
     installedEl.className = 'ver-block-value not-installed';
   }
 
-  // Status subtitle
-  if (!installState.installed) {
-    document.getElementById('install-sub').textContent = 'Ready to install';
-  } else if (result.upToDate) {
-    document.getElementById('install-sub').textContent = 'You\'re up to date';
+  if (!installState.installed)  document.getElementById('install-sub').textContent = 'Ready to install';
+  else if (upToDate)            document.getElementById('install-sub').textContent = 'You\'re up to date';
+  else document.getElementById('install-sub').textContent =
+    `Update available: ${installedVersion || '?'} → ${latestRelease.tag}`;
+
+  if (latestRelease.notes) {
+    notesBlock.style.display = '';
+    document.getElementById('release-notes-body').textContent = latestRelease.notes;
   } else {
-    document.getElementById('install-sub').textContent =
-      `Update available: ${result.installedVersion} → ${result.latestVersion}`;
+    notesBlock.style.display = 'none';
   }
 
-  // Release notes
-  if (latestRelease?.body) {
-    document.getElementById('release-notes-block').style.display = '';
-    document.getElementById('release-notes-body').textContent = latestRelease.body;
-  }
-
-  // Arm the install button
+  const result = { upToDate, latestVersion: latestRelease.tag };
   enableInstallButton(result);
+  return result;
 }
 
 function renderInstallState() {
@@ -1480,29 +1588,30 @@ function enableInstallButton(updateResult) {
   }
 }
 
-async function doInstall() {
-  if (!ghConfig || !latestRelease) {
-    setInstallMsg('Release info not loaded. Reload the page.', true);
+// On sign-in: refresh what this account may have, and update an existing install in the background.
+async function autoUpdateOnStart() {
+  try {
+    installState = await window.electron.installInfo();
+    await refreshBuilds();
+    if (!installState.installed || !installState.installedVer || !latestRelease) return;   // only update installs we made
+    const auto = await window.electron.storeGet('auto_update').catch(() => null);
+    if (auto === false) return;
+    if (installState.installedVer === latestRelease.tag) return;
+    toast(`Updating Ironveil to ${latestRelease.tag}…`);
+    await doInstall(true);
+  } catch (e) {
+    console.warn('[auto-update]', e);
+  }
+}
+
+async function doInstall(auto = false) {
+  if (installBusy) return;
+  if (!latestRelease?.asset) {
+    setInstallMsg('No build loaded. Reload the page.', true);
     return;
   }
-
-  // Pick the platform-appropriate asset
-  const platform = navigator.platform.toLowerCase();
-  const isWin    = platform.includes('win');
-  const isMac    = platform.includes('mac');
-
-  const assets = latestRelease.assets || [];
-  const asset  = assets.find(a => {
-    const n = a.name.toLowerCase();
-    if (isWin) return n.endsWith('.exe') || n.endsWith('.zip');
-    if (isMac) return n.endsWith('.dmg') || n.endsWith('.zip');
-    return n.endsWith('.zip');
-  }) || assets[0];
-
-  if (!asset) {
-    setInstallMsg('No downloadable asset found in this release.', true);
-    return;
-  }
+  installBusy = true;
+  const rel = latestRelease;
 
   // Lock UI
   const btn = document.getElementById('btn-do-install');
@@ -1516,6 +1625,13 @@ async function doInstall() {
   if (_offProgress) _offProgress();
   if (_offStatus)   _offStatus();
   if (_offDone)     _offDone();
+
+  const unlock = () => {
+    installBusy = false;
+    showProgress(false);
+    btn.disabled = false;
+    uninstBtn.disabled = false;
+  };
 
   _offProgress = window.electron.onInstallProgress(({ percent, bytesReceived, totalBytes }) => {
     document.getElementById('prog-fill').style.width = percent + '%';
@@ -1533,35 +1649,40 @@ async function doInstall() {
 
   _offDone = window.electron.onInstallDone(async ({ success, error }) => {
     _offProgress(); _offStatus(); _offDone();
-    showProgress(false);
-    btn.disabled = false;
-    uninstBtn.disabled = false;
+    unlock();
 
     if (success) {
       setInstallMsg('Installation complete — game is ready to launch.', false);
       toast('Ironveil installed successfully.');
-      // Refresh state
       installState = await window.electron.installInfo();
       renderInstallState();
       await checkForUpdate();
-      // Also refresh the launch page path
-      await detectGame();
+      await detectGame();   // refresh the launch page path
     } else {
       setInstallMsg('Installation failed: ' + (error || 'Unknown error'), true);
       toast('Install failed: ' + (error || 'Unknown error'), true);
     }
   });
 
-  // Kick off download
-  await window.electron.installGame({
-    owner:      ghConfig.owner,
-    repo:       ghConfig.repo,
-    token:      ghConfig.token,
-    assetId:    asset.id,
-    assetName:  asset.name,
-    version:    latestRelease.tag_name,
-    installDir: installState.installDir,
-  });
+  // Ask the server for a short-lived download link (it re-checks this account's role)
+  let url;
+  try {
+    document.getElementById('prog-status-text').textContent = 'Requesting download…';
+    const { data, error } = await sb.functions.invoke('get-latest-build', {
+      body: { action: 'download', tag: rel.tag }
+    });
+    if (error) throw new Error(await fnErrorMessage(error));
+    if (!data?.url) throw new Error('No download link returned');
+    url = data.url;
+  } catch (e) {
+    _offProgress(); _offStatus(); _offDone();
+    unlock();
+    setInstallMsg('Could not start the download: ' + e.message, true);
+    return;
+  }
+
+  await window.electron.installGame({ url, assetName: rel.asset.name, version: rel.tag });
+  // progress and the final result arrive through the install:* events above
 }
 
 async function doUninstall() {
@@ -1575,7 +1696,7 @@ async function doUninstall() {
     renderInstallState();
     document.getElementById('installed-ver-text').textContent = 'Not installed';
     document.getElementById('installed-ver-text').className = 'ver-block-value not-installed';
-    enableInstallButton({ upToDate: false, latestVersion: latestRelease?.tag_name || '—' });
+    enableInstallButton({ upToDate: false, latestVersion: latestRelease?.tag || '—' });
     setInstallMsg('Uninstalled.', false);
   } else {
     toast('Uninstall failed: ' + result.error, true);

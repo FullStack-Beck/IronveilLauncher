@@ -39,20 +39,15 @@ contextBridge.exposeInMainWorld('electron', {
   onServerLog: (cb) => { const handler = (_, data) => cb(data); ipcRenderer.on('server:log', handler); return () => ipcRenderer.removeListener('server:log', handler); },
   onServerState: (cb) => { const handler = (_, data) => cb(data); ipcRenderer.on('server:state', handler); return () => ipcRenderer.removeListener('server:state', handler); },
 
+  // ── App ────────────────────────────────────────────────────
+  getVersion: () => ipcRenderer.invoke('app:version'),
+
   // ── Installation info ──────────────────────────────────────
   // Returns: { installed, installedVer, installDir, exePath }
   installInfo: ()         => ipcRenderer.invoke('game:installInfo'),
 
-  // ── Release listing ────────────────────────────────────────
-  // { owner, repo, token } → { success, releases[] }
-  listReleases: (opts)    => ipcRenderer.invoke('releases:list', opts),
-
-  // ── Update check ───────────────────────────────────────────
-  // { owner, repo, token } → { success, upToDate, installedVersion, latestVersion, latestRelease }
-  checkUpdate: (opts)     => ipcRenderer.invoke('game:checkUpdate', opts),
-
   // ── Install / update ───────────────────────────────────────
-  // { owner, repo, token, assetId, assetName, version, installDir? }
+  // { url, assetName, version }  (url = short-lived link from the get-latest-build Edge function)
   // Progress/status streamed via onInstallProgress / onInstallStatus / onInstallDone
   installGame: (opts)     => ipcRenderer.invoke('game:install', opts),
 
